@@ -44,6 +44,10 @@ function parseSpokenEmail(transcript: string): string {
     .replace(/\s+/g, '')
 }
 
+function getSpeechRecognition(): any | null {
+  return (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+}
+
 export function useVoiceForm(
   onFill: (field: VoiceStep['field'], value: string) => void,
 ) {
@@ -53,6 +57,7 @@ export function useVoiceForm(
   const recognitionRef = useRef<any>(null)
   const onFillRef = useRef(onFill)
   onFillRef.current = onFill
+  const runningRef = useRef(false)
 
   const speak = useCallback((text: string, callback?: () => void) => {
     window.speechSynthesis.cancel()
@@ -63,18 +68,83 @@ export function useVoiceForm(
   }, [])
 
   const stop = useCallback(() => {
+    runningRef.current = false
     setActive(false)
     setSpokenField(null)
     stepRef.current = 0
     if (recognitionRef.current) {
-      try { recognitionRef.current.stop() } catch {}
+      try { recognitionRef.current.abort() } catch {}
       recognitionRef.current = null
     }
     window.speechSynthesis.cancel()
   }, [])
 
+  const startListening = useCallback(() => {
+    if (!runningRef.current) return
+
+    const SR = getSpeechRecognition()
+    if (!SR) return
+
+    // Always create a fresh instance — Chrome can't restart a used one
+    if (recognitionRef.current) {
+      try { recognitionRef.current.abort() } catch {}
+    }
+
+    const rec = new SR()
+    rec.lang = 'en-US'
+    rec.continuous = false
+    rec.interimResults = false
+    rec.maxAlternatives = 1
+
+    rec.onresult = (e: any) => {
+      const transcript = e.results[0][0].transcript.trim()
+      handleAnswerRef.current(transcript)
+    }
+    rec.onerror = (e: any) => {
+      console.error('Speech recognition error:', e.error)
+      if (e.error === 'no-speech' || e.error === 'aborted') return
+      speak("Sorry, I didn't catch that. Let's try again.", () => askStepRef.current(stepRef.current))
+    }
+    rec.onspeechend = () => {
+      try { rec.stop() } catch {}
+    }
+
+    recognitionRef.current = rec
+
+    try {
+      rec.start()
+    } catch {
+      // Chrome throws if called too quickly — retry after short delay
+      setTimeout(() => {
+        if (!runningRef.current) return
+        try { rec.start() } catch {}
+      }, 200)
+    }
+  }, [speak])
+
+  const handleAnswer = useCallback((raw: string) => {
+    if (!runningRef.current) return
+    const step = STEPS[stepRef.current]
+    let value = step.transform ? step.transform(raw) : raw
+
+    if (step.validate && !step.validate(value)) {
+      speak(`That didn't sound like a valid ${step.label}. Let's try again.`, () =>
+        askStepRef.current(stepRef.current),
+      )
+      return
+    }
+
+    onFillRef.current(step.field, value)
+    speak(`Got it. ${value}.`, () => {
+      stepRef.current++
+      askStepRef.current(stepRef.current)
+    })
+  }, [speak])
+
   const askStep = useCallback((idx: number) => {
+    if (!runningRef.current) return
     if (idx >= STEPS.length) {
+      runningRef.current = false
       setActive(false)
       setSpokenField(null)
       speak("All done! Please review the form and submit when ready.")
@@ -83,63 +153,31 @@ export function useVoiceForm(
     const step = STEPS[idx]
     setSpokenField(step.field)
     speak(step.prompt, () => {
-      try {
-        recognitionRef.current?.start()
-      } catch {
-        // already running — ignore
-      }
+      if (runningRef.current) startListening()
     })
-  }, [speak])
+  }, [speak, startListening])
 
-  const handleAnswer = useCallback((raw: string) => {
-    const step = STEPS[stepRef.current]
-    let value = step.transform ? step.transform(raw) : raw
-
-    if (step.validate && !step.validate(value)) {
-      speak(`That didn't sound like a valid ${step.label}. Let's try again.`, () =>
-        askStep(stepRef.current),
-      )
-      return
-    }
-
-    onFillRef.current(step.field, value)
-    speak(`Got it. ${value}.`, () => {
-      stepRef.current++
-      askStep(stepRef.current)
-    })
-  }, [speak, askStep])
+  // Keep refs to latest callbacks so recognition handlers (set up once per
+  // instance) always call the current version
+  const handleAnswerRef = useRef(handleAnswer)
+  handleAnswerRef.current = handleAnswer
+  const askStepRef = useRef(askStep)
+  askStepRef.current = askStep
 
   const start = useCallback(() => {
-    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+    const SR = getSpeechRecognition()
     if (!SR) {
       alert("Your browser doesn't support voice input. Try Chrome or Edge.")
       return
     }
 
-    const rec = new SR()
-    rec.lang = 'en-US'
-    rec.continuous = false
-    rec.interimResults = false
-    rec.maxAlternatives = 1
-    rec.onresult = (e: any) => {
-      const transcript = e.results[0][0].transcript.trim()
-      handleAnswer(transcript)
-    }
-    rec.onerror = (e: any) => {
-      console.error('Speech recognition error:', e.error)
-      speak("Sorry, I didn't catch that. Let's try again.", () => askStep(stepRef.current))
-    }
-    rec.onspeechend = () => {
-      try { rec.stop() } catch {}
-    }
-    recognitionRef.current = rec
-
+    runningRef.current = true
     stepRef.current = 0
     setActive(true)
     speak("Let's fill out the form together. I'll ask you a few questions.", () =>
       askStep(0),
     )
-  }, [handleAnswer, speak, askStep])
+  }, [speak, askStep])
 
   return { active, spokenField, start, stop }
 }
