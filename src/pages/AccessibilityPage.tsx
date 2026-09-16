@@ -112,13 +112,14 @@ export default function AccessibilityPage() {
     'Step 7. When you are ready, tap the Submit Report button at the bottom. Your report will be submitted with high priority and you will receive a tracking number to check its status later.',
   ]
 
-  const speak = useCallback((text: string) => {
+  const speak = useCallback((text: string, onEnd?: () => void) => {
     if (!('speechSynthesis' in window)) return
     window.speechSynthesis.cancel()
     const utterance = new SpeechSynthesisUtterance(text)
     utterance.rate = 0.9
     utterance.pitch = 1
     utterance.volume = 1
+    if (onEnd) utterance.onend = onEnd
     speechRef.current = utterance
     window.speechSynthesis.speak(utterance)
   }, [])
@@ -133,7 +134,12 @@ export default function AccessibilityPage() {
   const playStep = useCallback((step: number) => {
     if (step < 0 || step >= AUDIO_STEPS.length) return
     setAudioStep(step)
-    speak(AUDIO_STEPS[step])
+    speak(AUDIO_STEPS[step], () => {
+      if (step < AUDIO_STEPS.length - 1) {
+        setAudioStep(step + 1)
+        speak(AUDIO_STEPS[step + 1], undefined)
+      }
+    })
   }, [speak, AUDIO_STEPS])
 
   const toggleAudioGuide = () => {
@@ -157,6 +163,16 @@ export default function AccessibilityPage() {
   useEffect(() => {
     return () => stopSpeaking()
   }, [stopSpeaking])
+
+  useEffect(() => {
+    if (!audioGuideOn) return
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowRight') nextStep()
+      if (e.key === 'ArrowLeft') prevStep()
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [audioGuideOn, audioStep])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value })
@@ -325,8 +341,7 @@ export default function AccessibilityPage() {
         </div>
       </div>
 
-      {disabilityType === 'Visual Impairment' && (
-        <div className="accessibility-audio-guide">
+      <div className="accessibility-audio-guide">
           <div className="accessibility-audio-header">
             <div className="accessibility-audio-title-wrap">
               <Volume2 size={20} />
@@ -340,6 +355,19 @@ export default function AccessibilityPage() {
             >
               {audioGuideOn ? <Volume2 size={18} /> : <VolumeX size={18} />}
               <span>{audioGuideOn ? 'On' : 'Off'}</span>
+            </button>
+            <button
+              type="button"
+              className="accessibility-audio-toggle"
+              onClick={() => {
+                const fullText = AUDIO_STEPS.join(' ')
+                speak(fullText)
+                setAudioGuideOn(true)
+              }}
+              aria-label="Read entire guide from start to finish"
+            >
+              <Volume2 size={18} />
+              <span>Read All</span>
             </button>
           </div>
           {audioGuideOn && (
@@ -389,7 +417,6 @@ export default function AccessibilityPage() {
             </div>
           )}
         </div>
-      )}
 
       <form className="complaint-form" onSubmit={handleSubmit}>
         {error && (
