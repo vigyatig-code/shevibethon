@@ -45,10 +45,6 @@ const CIVIC_ISSUE_IMAGES = [
     src: 'https://images.pexels.com/photos/15954727/pexels-photo-15954727.jpeg?auto=compress&cs=tinysrgb&w=1600',
     label: 'Drainage Problems',
   },
-  {
-    src: 'https://images.pexels.com/photos/8592630/pexels-photo-8592630.jpeg?auto=compress&cs=tinysrgb&w=1600',
-    label: 'Traffic Congestion',
-  },
 ]
 
 const FLASH_DURATION = 220
