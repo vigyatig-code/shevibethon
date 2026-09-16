@@ -11,6 +11,7 @@ import ParticipationCTA from '../components/ParticipationCTA'
 import DomeGallery from '../components/DomeGallery'
 import DepthText from '../components/DepthText'
 import SplitFlapText from '../components/SplitFlapText'
+import ThreeDCardDemo from '../components/ThreeDCard'
 
 // Home: assembles all front-page sections in order.
 // Each section is a self-contained component with its own
@@ -43,6 +44,17 @@ export default function Home() {
         <p className="civic-dome-gallery-hint">Drag to rotate &middot; Click an image to enlarge</p>
       </section>
       <CommunityVoice />
+
+      <section className="civic-3d-card-section" aria-label="Explore in 3D">
+        <div className="civic-3d-card-section-header">
+          <h2 className="civic-3d-card-section-title">See ideas come to life</h2>
+          <p className="civic-3d-card-section-subtitle">
+            Hover over the card to explore community suggestions in an interactive 3D perspective.
+          </p>
+        </div>
+        <ThreeDCardDemo />
+      </section>
+
       <NearbyIssues />
       <FeaturedInitiatives />
       <BreakingNews />
