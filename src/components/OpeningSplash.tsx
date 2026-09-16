@@ -47,7 +47,7 @@ const CIVIC_ISSUE_IMAGES = [
   },
 ]
 
-const FLASH_DURATION = 220
+const FLASH_DURATION = 650
 const FINALE_HOLD = 2600
 
 export default function OpeningSplash({ onComplete }: { onComplete: () => void }) {
