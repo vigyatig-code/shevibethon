@@ -59,49 +59,51 @@ export default function Layout() {
             <span className="civic-logo-text">Civic Portal</span>
           </Link>
 
-          <nav className={`civic-nav ${menuOpen ? 'open' : ''}`} aria-label="Main navigation">
-            {navItems.map(({ to, label, icon: Icon, end }) => (
-              <NavLink
-                key={to}
-                to={to}
-                end={end}
-                className={({ isActive }) => `civic-nav-link ${isActive ? 'active' : ''}`}
-                onClick={() => setMenuOpen(false)}
-              >
-                <Icon size={16} />
-                <span>{label}</span>
-              </NavLink>
-            ))}
-            <Link to="/file" className="civic-nav-cta" onClick={() => setMenuOpen(false)}>
-              Take Action
-            </Link>
-          </nav>
+          <div className="civic-header-right">
+            <nav className={`civic-nav ${menuOpen ? 'open' : ''}`} aria-label="Main navigation">
+              {navItems.map(({ to, label, icon: Icon, end }) => (
+                <NavLink
+                  key={to}
+                  to={to}
+                  end={end}
+                  className={({ isActive }) => `civic-nav-link ${isActive ? 'active' : ''}`}
+                  onClick={() => setMenuOpen(false)}
+                >
+                  <Icon size={16} />
+                  <span>{label}</span>
+                </NavLink>
+              ))}
+              <Link to="/file" className="civic-nav-cta" onClick={() => setMenuOpen(false)}>
+                Take Action
+              </Link>
+            </nav>
 
-          <div className="civic-auth-area">
-            {isSignedIn ? (
-              <div className="civic-user-chip">
-                <UserCircle size={18} />
-                <span className="civic-user-chip-name">{displayName}</span>
-                <button className="civic-sign-out-btn" onClick={signOut} aria-label="Sign out" title="Sign out">
-                  <LogOut size={14} />
+            <div className="civic-auth-area">
+              {isSignedIn ? (
+                <div className="civic-user-chip">
+                  <UserCircle size={18} />
+                  <span className="civic-user-chip-name">{displayName}</span>
+                  <button className="civic-sign-out-btn" onClick={signOut} aria-label="Sign out" title="Sign out">
+                    <LogOut size={14} />
+                  </button>
+                </div>
+              ) : (
+                <button className="civic-sign-in-btn" onClick={() => setSignInOpen(true)}>
+                  <LogIn size={16} />
+                  <span>Sign In</span>
                 </button>
-              </div>
-            ) : (
-              <button className="civic-sign-in-btn" onClick={() => setSignInOpen(true)}>
-                <LogIn size={16} />
-                <span>Sign In</span>
-              </button>
-            )}
-          </div>
+              )}
+            </div>
 
-          <button
-            className="civic-menu-toggle"
-            onClick={() => setMenuOpen((o) => !o)}
-            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
-            aria-expanded={menuOpen}
-          >
-            {menuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
+            <button
+              className="civic-menu-toggle"
+              onClick={() => setMenuOpen((o) => !o)}
+              aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+              aria-expanded={menuOpen}
+            >
+              {menuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          </div>
         </div>
       </header>
 

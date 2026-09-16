@@ -1,9 +1,10 @@
 import { useState, useRef, useCallback } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { FileText, CheckCircle2, AlertCircle, Loader2, Lock, Camera, X, MapPin, Navigation, Check, LogIn } from 'lucide-react'
+import { FileText, CheckCircle2, AlertCircle, Loader2, Lock, Camera, X, MapPin, Navigation, Check, LogIn, Mic, Square } from 'lucide-react'
 import { supabase, CATEGORIES, generateTrackingNumber, assessSeverity, uploadComplaintPhoto, type ComplaintInput } from '../lib/supabase'
 import TrueFocus from '../components/TrueFocus'
 import { useAuth } from '../lib/auth'
+import { useVoiceForm } from '../lib/useVoiceForm'
 
 export default function FileComplaint() {
   const navigate = useNavigate()
@@ -65,6 +66,10 @@ export default function FileComplaint() {
       { enableHighAccuracy: true, timeout: 15000, maximumAge: 300000 }
     )
   }, [])
+
+  const voice = useVoiceForm((field, value) => {
+    setForm((prev) => ({ ...prev, [field]: value }))
+  })
 
   const completedSteps = [
     !!(form.name && form.email),
@@ -424,7 +429,24 @@ export default function FileComplaint() {
           )}
         </div>
 
+        {voice.active && (
+          <div className="voice-fill-banner">
+            <Mic size={18} className="pulse" />
+            <span>Listening for: <strong>{voice.spokenField}</strong></span>
+            <button type="button" className="btn btn-ghost btn-sm" onClick={voice.stop}>
+              <Square size={14} />
+              Stop
+            </button>
+          </div>
+        )}
+
         <div className="form-actions">
+          {!voice.active && (
+            <button type="button" className="btn btn-ghost" onClick={voice.start}>
+              <Mic size={18} />
+              Fill by Voice
+            </button>
+          )}
           <Link to="/" className="btn btn-ghost">
             Cancel
           </Link>
