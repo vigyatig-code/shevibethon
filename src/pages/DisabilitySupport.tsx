@@ -17,11 +17,11 @@ type SpeechRecognitionType = {
 }
 
 const VOICE_KEYWORDS: Record<string, string[]> = {
-  'Visual Impairment': ['visual', 'blind', 'eyes', 'sight', 'low vision', 'braille'],
-  'Hearing Impairment': ['hearing', 'deaf', 'ear', 'ears', 'hard of hearing', 'sound'],
-  'Mobility / Wheelchair': ['mobility', 'wheelchair', 'physical', 'ramp', 'walking', 'legs', 'crutches', 'movement'],
-  'Cognitive / Developmental': ['cognitive', 'developmental', 'autism', 'autistic', 'brain', 'learning', 'intellectual', 'down syndrome'],
-  'Multiple Disabilities': ['multiple', 'more than one', 'several', 'both', 'combination'],
+  'Visual Impairment': ['visual', 'blind', 'eyes', 'sight', 'low vision', 'braille', 'visually'],
+  'Hearing Impairment': ['hearing', 'deaf', 'ear', 'ears', 'hard of hearing', 'sound', 'hearing loss'],
+  'Mobility / Wheelchair': ['mobility', 'wheelchair', 'physical', 'ramp', 'walking', 'legs', 'crutches', 'movement', 'disabled', 'handicap'],
+  'Cognitive / Developmental': ['cognitive', 'developmental', 'autism', 'autistic', 'brain', 'learning', 'intellectual', 'down syndrome', 'mental'],
+  'Multiple Disabilities': ['multiple', 'more than one', 'several', 'both', 'combination', 'many disabilities'],
 }
 
 type DisabilityValue = 'Visual Impairment' | 'Hearing Impairment' | 'Mobility / Wheelchair' | 'Cognitive / Developmental' | 'Multiple Disabilities'
@@ -280,7 +280,9 @@ export default function DisabilitySupport() {
       if (match) {
         handleSelect(match)
       } else {
-        setVoiceError(`Could not match "${transcript}" to a disability. Try saying "visual", "hearing", "mobility", "cognitive", or "multiple".`)
+        const apology = `Sorry, I didn't catch that. I heard "${transcript}". Please try saying visual, hearing, mobility, cognitive, or multiple.`
+        setVoiceError(apology)
+        speak(apology)
       }
     }
 
@@ -305,10 +307,13 @@ export default function DisabilitySupport() {
     recognition.start()
   }, [matchVoiceToDisability, stopSpeaking])
 
+  const [highlighted, setHighlighted] = useState<string | null>(null)
+
   const handleSelect = (disability: DisabilityInfo) => {
     setSelected(disability)
     setVoiceError(null)
     setVoiceTranscript('')
+    setHighlighted(disability.value)
     speak(disability.audioDesc)
   }
 
@@ -471,7 +476,7 @@ export default function DisabilitySupport() {
             >
               <button
                 type="button"
-                className="disability-select-card"
+                className={`disability-select-card ${highlighted === disability.value ? 'voice-highlighted' : ''}`}
                 onClick={() => handleSelect(disability)}
                 aria-label={`Select ${disability.label}`}
               >

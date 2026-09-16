@@ -82,85 +82,107 @@ function NearbyCard({ c, index, reduced }: { c: NearbyComplaint; index: number; 
   )
 }
 
-// Demo nearby complaints for when the database has no geolocated entries
-const demoNearby: NearbyComplaint[] = [
+// Demo complaint templates — locations are generated dynamically near the user's real coordinates
+interface DemoTemplate {
+  id: string
+  tracking_number: string
+  category: string
+  subject: string
+  description: string
+  status: string
+  priority: string
+  severity: string
+  location_name: string
+  ageHours: number
+}
+
+const demoTemplates: DemoTemplate[] = [
   {
     id: 'demo-1',
     tracking_number: 'CMP-DEMO001',
-    name: 'Resident',
-    email: 'demo@portal.gov.in',
     category: 'Service Complaint',
-    subject: 'Potholes on Brigade Road junction',
-    description: 'Deep potholes near the Brigade Road junction are causing accidents and two-wheeler skids, especially during monsoon rain.',
+    subject: 'Potholes on main road junction',
+    description: 'Deep potholes near the main road junction are causing accidents and two-wheeler skids, especially during monsoon rain.',
     status: 'Pending',
     priority: 'Normal',
     severity: 'High',
-    photo_url: null,
-    latitude: 12.975,
-    longitude: 77.605,
-    location_name: 'Brigade Road, Bengaluru',
-    created_at: new Date(Date.now() - 86400000).toISOString(),
-    updated_at: new Date(Date.now() - 86400000).toISOString(),
-    distance: 0.8,
+    location_name: 'Nearby junction',
+    ageHours: 24,
   },
   {
     id: 'demo-2',
     tracking_number: 'CMP-DEMO002',
-    name: 'Resident',
-    email: 'demo@portal.gov.in',
     category: 'Quality Issue',
     subject: 'Water pipeline leakage on 5th Cross',
-    description: 'A major water leak on 5th Cross, Indiranagar has been flooding the road for three days. Clean water is being wasted.',
+    description: 'A major water leak on 5th Cross has been flooding the road for three days. Clean water is being wasted.',
     status: 'Under Review',
     priority: 'High',
     severity: 'Critical',
-    photo_url: null,
-    latitude: 12.972,
-    longitude: 77.612,
-    location_name: 'Indiranagar, Bengaluru',
-    created_at: new Date(Date.now() - 172800000).toISOString(),
-    updated_at: new Date(Date.now() - 172800000).toISOString(),
-    distance: 1.2,
+    location_name: '5th Cross, nearby',
+    ageHours: 48,
   },
   {
     id: 'demo-3',
     tracking_number: 'CMP-DEMO003',
-    name: 'Resident',
-    email: 'demo@portal.gov.in',
     category: 'Service Complaint',
     subject: 'Garbage not collected for a week',
-    description: 'The municipal waste collection truck has not visited our street in Koramangala for over a week. Pile-up is causing health concerns and stray dog menace.',
+    description: 'The municipal waste collection truck has not visited our street for over a week. Pile-up is causing health concerns and stray dog menace.',
     status: 'Pending',
     priority: 'Normal',
     severity: 'Medium',
-    photo_url: null,
-    latitude: 12.968,
-    longitude: 77.640,
-    location_name: 'Koramangala, Bengaluru',
-    created_at: new Date(Date.now() - 259200000).toISOString(),
-    updated_at: new Date(Date.now() - 259200000).toISOString(),
-    distance: 2.5,
+    location_name: 'Nearby street',
+    ageHours: 72,
   },
   {
     id: 'demo-4',
     tracking_number: 'CMP-DEMO004',
-    name: 'Resident',
-    email: 'demo@portal.gov.in',
     category: 'Accessibility & Disability',
     subject: 'Footpath broken near school zone',
-    description: 'The pavement outside the school in HSR Layout is cracked and uneven, making it dangerous for children and wheelchair users.',
+    description: 'The pavement outside the school is cracked and uneven, making it dangerous for children and wheelchair users.',
     status: 'Resolved',
     priority: 'High',
     severity: 'High',
-    photo_url: null,
-    latitude: 12.960,
-    longitude: 77.638,
-    location_name: 'HSR Layout, Bengaluru',
-    created_at: new Date(Date.now() - 604800000).toISOString(),
-    updated_at: new Date(Date.now() - 432000000).toISOString(),
-    distance: 3.1,
+    location_name: 'Near school zone',
+    ageHours: 168,
   },
 ]
+
+// Generate demo complaints at random offsets (0.3–3 km) from the user's real location
+function generateDemoNearby(lat: number, lng: number): NearbyComplaint[] {
+  // ~1 km in degrees latitude; longitude scales by cos(lat)
+  const kmPerDegLat = 111
+  const kmPerDegLng = 111 * Math.cos((lat * Math.PI) / 180)
+
+  return demoTemplates.map((t) => {
+    // Random distance 0.3–3.0 km, random bearing
+    const distKm = 0.3 + Math.random() * 2.7
+    const bearing = Math.random() * 2 * Math.PI
+    const dLatKm = distKm * Math.sin(bearing)
+    const dLngKm = distKm * Math.cos(bearing)
+    const dLat = dLatKm / kmPerDegLat
+    const dLng = dLngKm / kmPerDegLng
+    const created = new Date(Date.now() - t.ageHours * 3600000).toISOString()
+    return {
+      id: t.id,
+      tracking_number: t.tracking_number,
+      name: 'Resident',
+      email: 'demo@portal.gov.in',
+      category: t.category,
+      subject: t.subject,
+      description: t.description,
+      status: t.status,
+      priority: t.priority,
+      severity: t.severity,
+      photo_url: null,
+      latitude: lat + dLat,
+      longitude: lng + dLng,
+      location_name: t.location_name,
+      created_at: created,
+      updated_at: created,
+      distance: distKm,
+    }
+  })
+}
 
 export default function NearbyIssues() {
   const [locationState, setLocationState] = useState<LocationState>('idle')
@@ -175,7 +197,7 @@ export default function NearbyIssues() {
     if (!navigator.geolocation) {
       setLocationState('error')
       setErrorMsg('Geolocation is not supported by your browser. Showing demo issues instead.')
-      setComplaints(demoNearby)
+      setComplaints(generateDemoNearby(0, 0))
       return
     }
 
@@ -198,7 +220,7 @@ export default function NearbyIssues() {
       } else {
         setErrorMsg('Location request timed out. Showing demo issues instead.')
       }
-      setComplaints(demoNearby)
+      setComplaints(generateDemoNearby(0, 0))
     },
     { enableHighAccuracy: true, timeout: 15000, maximumAge: 300000 }
     )
@@ -236,14 +258,11 @@ export default function NearbyIssues() {
         setComplaints(withDistance)
       } else {
         setComplaints(
-          demoNearby.map((d) => ({
-            ...d,
-            distance: haversine(lat, lng, d.latitude!, d.longitude!),
-          })).sort((a, b) => a.distance - b.distance)
+          generateDemoNearby(lat, lng).sort((a, b) => a.distance - b.distance)
         )
       }
     } catch {
-      setComplaints(demoNearby)
+      setComplaints(generateDemoNearby(lat, lng))
       setErrorMsg('Could not load nearby complaints. Showing demo issues instead.')
     } finally {
       setLoading(false)
