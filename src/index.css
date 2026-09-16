@@ -3338,6 +3338,14 @@ body {
   opacity: 0.7;
 }
 
+.civic-nearby-denied-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
 .civic-nearby-loading {
   display: flex;
   flex-direction: column;
@@ -6237,4 +6245,101 @@ body {
   .disability-selection-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* Voice input section */
+
+.disability-voice-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-top: 28px;
+  padding: 24px;
+  background: rgba(26, 18, 8, 0.4);
+  border: 1px solid rgba(169, 101, 69, 0.2);
+  border-radius: 16px;
+}
+
+.disability-mic-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 28px;
+  border-radius: 50px;
+  border: 2px solid rgba(169, 101, 69, 0.4);
+  background: rgba(169, 101, 69, 0.12);
+  color: #c4976a;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+.disability-mic-btn:hover {
+  background: rgba(169, 101, 69, 0.2);
+  border-color: rgba(169, 101, 69, 0.6);
+  color: #d4af37;
+}
+
+.disability-mic-btn.listening {
+  border-color: #d4af37;
+  background: rgba(212, 175, 55, 0.15);
+  color: #d4af37;
+  animation: mic-pulse-border 1.5s ease-in-out infinite;
+}
+
+@keyframes mic-pulse-border {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.4); }
+  50% { box-shadow: 0 0 0 12px rgba(212, 175, 55, 0); }
+}
+
+.disability-voice-pulse {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  height: 24px;
+}
+
+.disability-voice-pulse span {
+  display: block;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #d4af37;
+  animation: voice-dot 1.2s ease-in-out infinite;
+}
+
+.disability-voice-pulse span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.disability-voice-pulse span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes voice-dot {
+  0%, 100% { transform: scale(1); opacity: 0.4; }
+  50% { transform: scale(1.8); opacity: 1; }
+}
+
+.disability-voice-transcript {
+  font-size: 0.88rem;
+  color: var(--civic-text, #d4c4a8);
+  font-style: italic;
+}
+
+.disability-voice-error {
+  font-size: 0.85rem;
+  color: #e08060;
+  text-align: center;
+  max-width: 420px;
+  line-height: 1.5;
+}
+
+.disability-voice-hint {
+  font-size: 0.8rem;
+  color: var(--civic-muted, #a89070);
+  text-align: center;
 }

@@ -200,7 +200,7 @@ export default function NearbyIssues() {
       }
       setComplaints(demoNearby)
     },
-    { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 }
+    { enableHighAccuracy: true, timeout: 15000, maximumAge: 300000 }
     )
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -274,8 +274,12 @@ export default function NearbyIssues() {
               <MapPin size={18} />
               Allow location access
             </button>
+            <Link to="/complaints" className="civic-btn civic-btn-ghost civic-btn-lg">
+              <ArrowRight size={18} />
+              Browse without location
+            </Link>
             <span className="civic-nearby-prompt-hint">
-              You can also browse all complaints without sharing your location.
+              Your exact location is never stored or shared.
             </span>
           </div>
         )}
@@ -292,6 +296,19 @@ export default function NearbyIssues() {
           <div className="civic-nearby-notice" role="status">
             <AlertCircle size={16} />
             <span>{errorMsg}</span>
+          </div>
+        )}
+
+        {locationState === 'denied' && (
+          <div className="civic-nearby-denied-actions">
+            <button className="civic-btn civic-btn-ghost civic-btn-lg" onClick={requestLocation}>
+              <MapPin size={18} />
+              Try again
+            </button>
+            <Link to="/complaints" className="civic-btn civic-btn-primary civic-btn-lg">
+              <ArrowRight size={18} />
+              Browse all complaints
+            </Link>
           </div>
         )}
 

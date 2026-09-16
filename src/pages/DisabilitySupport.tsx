@@ -1,8 +1,28 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Eye, Ear, Footprints, Brain, Heart, Volume2, VolumeX, ChevronRight, Info, FileText, ArrowLeft } from 'lucide-react'
+import { Eye, Ear, Footprints, Brain, Heart, Volume2, VolumeX, ChevronRight, Info, FileText, ArrowLeft, Mic, MicOff } from 'lucide-react'
 import BorderGlow from '../components/BorderGlow'
 import TrueFocus from '../components/TrueFocus'
+
+type SpeechRecognitionType = {
+  lang: string
+  continuous: boolean
+  interimResults: boolean
+  onresult: (event: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void
+  onerror: (event: { error: string }) => void
+  onend: () => void
+  start: () => void
+  stop: () => void
+  abort: () => void
+}
+
+const VOICE_KEYWORDS: Record<string, string[]> = {
+  'Visual Impairment': ['visual', 'blind', 'eyes', 'sight', 'low vision', 'braille'],
+  'Hearing Impairment': ['hearing', 'deaf', 'ear', 'ears', 'hard of hearing', 'sound'],
+  'Mobility / Wheelchair': ['mobility', 'wheelchair', 'physical', 'ramp', 'walking', 'legs', 'crutches', 'movement'],
+  'Cognitive / Developmental': ['cognitive', 'developmental', 'autism', 'autistic', 'brain', 'learning', 'intellectual', 'down syndrome'],
+  'Multiple Disabilities': ['multiple', 'more than one', 'several', 'both', 'combination'],
+}
 
 type DisabilityValue = 'Visual Impairment' | 'Hearing Impairment' | 'Mobility / Wheelchair' | 'Cognitive / Developmental' | 'Multiple Disabilities'
 
@@ -169,7 +189,11 @@ export default function DisabilitySupport() {
   const navigate = useNavigate()
   const [selected, setSelected] = useState<DisabilityInfo | null>(null)
   const [speaking, setSpeaking] = useState(false)
+  const [listening, setListening] = useState(false)
+  const [voiceTranscript, setVoiceTranscript] = useState('')
+  const [voiceError, setVoiceError] = useState<string | null>(null)
   const speechRef = useRef<SpeechSynthesisUtterance | null>(null)
+  const recognitionRef = useRef<SpeechRecognitionType | null>(null)
 
   const speak = useCallback((text: string) => {
     if (!('speechSynthesis' in window)) return
@@ -196,8 +220,95 @@ export default function DisabilitySupport() {
     return () => stopSpeaking()
   }, [stopSpeaking])
 
+  useEffect(() => {
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.abort()
+      }
+    }
+  }, [])
+
+  const matchVoiceToDisability = useCallback((transcript: string): DisabilityInfo | null => {
+    const lower = transcript.toLowerCase()
+    let bestMatch: DisabilityInfo | null = null
+    let bestScore = 0
+    for (const disability of DISABILITIES) {
+      const keywords = VOICE_KEYWORDS[disability.value] || []
+      let score = 0
+      for (const keyword of keywords) {
+        if (lower.includes(keyword.toLowerCase())) {
+          score += keyword.length
+        }
+      }
+      if (score > bestScore) {
+        bestScore = score
+        bestMatch = disability
+      }
+    }
+    return bestMatch
+  }, [])
+
+  const stopListening = useCallback(() => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop()
+      recognitionRef.current = null
+    }
+    setListening(false)
+  }, [])
+
+  const startListening = useCallback(() => {
+    const SpeechRecognitionCtor =
+      (window as unknown as { SpeechRecognition?: new () => SpeechRecognitionType }).SpeechRecognition ||
+      (window as unknown as { webkitSpeechRecognition?: new () => SpeechRecognitionType }).webkitSpeechRecognition
+    if (!SpeechRecognitionCtor) {
+      setVoiceError('Voice recognition is not supported in this browser. Please use Chrome or Edge.')
+      return
+    }
+    setVoiceError(null)
+    setVoiceTranscript('')
+    stopSpeaking()
+
+    const recognition = new SpeechRecognitionCtor()
+    recognition.lang = 'en-US'
+    recognition.continuous = false
+    recognition.interimResults = false
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript
+      setVoiceTranscript(transcript)
+      const match = matchVoiceToDisability(transcript)
+      if (match) {
+        handleSelect(match)
+      } else {
+        setVoiceError(`Could not match "${transcript}" to a disability. Try saying "visual", "hearing", "mobility", "cognitive", or "multiple".`)
+      }
+    }
+
+    recognition.onerror = (event) => {
+      if (event.error === 'no-speech') {
+        setVoiceError('No speech detected. Please try again.')
+      } else if (event.error === 'not-allowed') {
+        setVoiceError('Microphone access denied. Please allow microphone access and try again.')
+      } else {
+        setVoiceError(`Voice error: ${event.error}`)
+      }
+      setListening(false)
+    }
+
+    recognition.onend = () => {
+      setListening(false)
+      recognitionRef.current = null
+    }
+
+    recognitionRef.current = recognition
+    setListening(true)
+    recognition.start()
+  }, [matchVoiceToDisability, stopSpeaking])
+
   const handleSelect = (disability: DisabilityInfo) => {
     setSelected(disability)
+    setVoiceError(null)
+    setVoiceTranscript('')
     speak(disability.audioDesc)
   }
 
@@ -313,6 +424,32 @@ export default function DisabilitySupport() {
           />
         </div>
         <p>Choose your disability type below to see common issues, your rights, available resources, and to file a report. An audio description will play automatically when you select a disability.</p>
+      </div>
+
+      <div className="disability-voice-section">
+        <button
+          type="button"
+          className={`disability-mic-btn ${listening ? 'listening' : ''}`}
+          onClick={() => (listening ? stopListening() : startListening())}
+          aria-label={listening ? 'Stop voice input' : 'Start voice input'}
+        >
+          {listening ? <MicOff size={24} /> : <Mic size={24} />}
+          <span>{listening ? 'Listening... Tap to stop' : 'Say your disability type'}</span>
+        </button>
+        {listening && (
+          <div className="disability-voice-pulse">
+            <span /><span /><span />
+          </div>
+        )}
+        {voiceTranscript && !listening && (
+          <p className="disability-voice-transcript">Heard: "{voiceTranscript}"</p>
+        )}
+        {voiceError && (
+          <p className="disability-voice-error">{voiceError}</p>
+        )}
+        <p className="disability-voice-hint">
+          Try saying: "visual impairment", "hearing", "mobility", "cognitive", or "multiple disabilities"
+        </p>
       </div>
 
       <div className="disability-selection-grid">
