@@ -1,14 +1,16 @@
 import { useState, useRef, useCallback } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { FileText, CheckCircle2, AlertCircle, Loader2, Lock, Camera, X, MapPin, Navigation, Check } from 'lucide-react'
+import { FileText, CheckCircle2, AlertCircle, Loader2, Lock, Camera, X, MapPin, Navigation, Check, LogIn } from 'lucide-react'
 import { supabase, CATEGORIES, generateTrackingNumber, assessSeverity, uploadComplaintPhoto, type ComplaintInput } from '../lib/supabase'
 import TrueFocus from '../components/TrueFocus'
+import { useAuth } from '../lib/auth'
 
 export default function FileComplaint() {
   const navigate = useNavigate()
+  const { isSignedIn, profile, needsProfile } = useAuth()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [form, setForm] = useState<ComplaintInput>({
-    name: '',
+    name: profile?.full_name || '',
     email: '',
     category: CATEGORIES[0],
     subject: '',
@@ -163,6 +165,56 @@ export default function FileComplaint() {
               File Another
             </Link>
           </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!isSignedIn) {
+    return (
+      <div className="page-container">
+        <div className="form-page-header">
+          <div className="form-page-icon">
+            <FileText size={32} />
+          </div>
+          <h1>Report an Issue</h1>
+          <p>You need to sign in before you can file a complaint.</p>
+        </div>
+        <div className="auth-gate-card">
+          <div className="auth-gate-icon">
+            <Lock size={40} />
+          </div>
+          <h2>Sign In Required</h2>
+          <p>To report a civic issue, please sign in with your phone number. This helps us verify reports and keep track of updates for you.</p>
+          <Link to="/" className="btn btn-primary btn-lg">
+            <LogIn size={20} />
+            Go to Sign In
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
+  if (needsProfile) {
+    return (
+      <div className="page-container">
+        <div className="form-page-header">
+          <div className="form-page-icon">
+            <FileText size={32} />
+          </div>
+          <h1>Report an Issue</h1>
+          <p>Please complete your profile before filing a complaint.</p>
+        </div>
+        <div className="auth-gate-card">
+          <div className="auth-gate-icon">
+            <FileText size={40} />
+          </div>
+          <h2>Complete Your Profile</h2>
+          <p>We need a few more details to set up your account. Please complete the sign-in process from the home page.</p>
+          <Link to="/" className="btn btn-primary btn-lg">
+            <LogIn size={20} />
+            Go to Home
+          </Link>
         </div>
       </div>
     )
