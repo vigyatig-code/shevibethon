@@ -727,6 +727,114 @@ body {
   }
 }
 
+/* ---- WE GOT YOU finale ---- */
+.civic-opening-splash.phase-finale {
+  background: radial-gradient(ellipse at center, #2a1a0e 0%, #1a120b 50%, #0d0905 100%);
+}
+
+.civic-opening-splash.phase-finale .civic-opening-splash-skip {
+  opacity: 0.5;
+}
+
+.civic-opening-splash-finale {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+  animation: civic-finale-bg-in 0.5s ease-out;
+}
+
+@keyframes civic-finale-bg-in {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+.civic-opening-splash-finale-glow {
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(169, 101, 69, 0.18) 0%, rgba(196, 151, 106, 0.08) 40%, transparent 70%);
+  animation: civic-finale-glow-pulse 2.6s ease-in-out infinite;
+}
+
+@keyframes civic-finale-glow-pulse {
+  0%, 100% { transform: scale(0.85); opacity: 0.6; }
+  50% { transform: scale(1.1); opacity: 1; }
+}
+
+.civic-opening-splash-finale-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+}
+
+.civic-opening-splash-finale-kicker {
+  font-family: var(--font-serif, 'Playfair Display', Georgia, serif);
+  font-size: clamp(0.9rem, 2.5vw, 1.3rem);
+  font-weight: 400;
+  color: rgba(249, 244, 236, 0.6);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  opacity: 0;
+  animation: civic-finale-fade-up 0.6s ease-out 0.1s forwards;
+}
+
+.civic-opening-splash-finale-title {
+  font-family: var(--font-serif, 'Playfair Display', Georgia, serif);
+  font-size: clamp(2.8rem, 9vw, 5.5rem);
+  font-weight: 800;
+  color: #f9f4ec;
+  letter-spacing: 0.02em;
+  line-height: 1.1;
+  text-transform: uppercase;
+  text-shadow: 0 4px 30px rgba(169, 101, 69, 0.4), 0 0 60px rgba(196, 151, 106, 0.2);
+  opacity: 0;
+  transform: translateY(20px) scale(0.92);
+  animation: civic-finale-title-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.25s forwards;
+}
+
+@keyframes civic-finale-title-in {
+  0% {
+    opacity: 0;
+    transform: translateY(30px) scale(0.88);
+    letter-spacing: 0.2em;
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    letter-spacing: 0.02em;
+  }
+}
+
+.civic-opening-splash-finale-sub {
+  font-family: var(--font-body, 'Inter', system-ui, sans-serif);
+  font-size: clamp(0.8rem, 2vw, 1.1rem);
+  font-weight: 500;
+  color: rgba(196, 151, 106, 0.9);
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  opacity: 0;
+  animation: civic-finale-fade-up 0.6s ease-out 0.6s forwards;
+}
+
+@keyframes civic-finale-fade-up {
+  0% {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* ==================== DECORATIVE SHAPES ==================== */
 
 /* Hero floating shapes */
