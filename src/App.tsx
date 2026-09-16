@@ -7,6 +7,7 @@ import TrackComplaint from './pages/TrackComplaint'
 import ComplaintList from './pages/ComplaintList'
 import Insights from './pages/Insights'
 import AccessibilityPage from './pages/AccessibilityPage'
+import DisabilitySupport from './pages/DisabilitySupport'
 import MapPage from './pages/MapPage'
 import MapViewPage from './pages/MapViewPage'
 import OpeningSplash from './components/OpeningSplash'
@@ -27,6 +28,7 @@ export default function App() {
           <Route path="/track/:trackingNumber" element={<TrackComplaint />} />
           <Route path="/complaints" element={<ComplaintList />} />
           <Route path="/insights" element={<Insights />} />
+          <Route path="/disability-support" element={<DisabilitySupport />} />
           <Route path="/accessibility" element={<AccessibilityPage />} />
           <Route path="/map" element={<MapPage />} />
           <Route path="/map-view" element={<MapViewPage />} />

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { Accessibility, CheckCircle2, AlertCircle, Loader2, Lock, Camera, X, Heart, Eye, Ear, Brain, Footprints, Volume2, VolumeX } from 'lucide-react'
 import { supabase, generateTrackingNumber, assessSeverity, uploadComplaintPhoto, type ComplaintInput } from '../lib/supabase'
 import TrueFocus from '../components/TrueFocus'
@@ -83,6 +83,7 @@ const DEFAULT_ACCESSIBILITY_ISSUES = [
 
 export default function AccessibilityPage() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [form, setForm] = useState<ComplaintInput>({
     name: '',
@@ -163,6 +164,13 @@ export default function AccessibilityPage() {
   useEffect(() => {
     return () => stopSpeaking()
   }, [stopSpeaking])
+
+  useEffect(() => {
+    const typeParam = searchParams.get('type')
+    if (typeParam) {
+      setDisabilityType(typeParam)
+    }
+  }, [searchParams])
 
   useEffect(() => {
     if (!audioGuideOn) return
