@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useNavigate, Link, useSearchParams } from 'react-router-dom'
-import { Accessibility, CheckCircle2, AlertCircle, Loader2, Lock, Camera, X, Heart, Eye, Ear, Brain, Footprints, Volume2, VolumeX } from 'lucide-react'
+import { Accessibility, CheckCircle2, AlertCircle, Loader2, Lock, Camera, X, Heart, Eye, Ear, Brain, Footprints, Volume2, VolumeX, Mic, MicOff } from 'lucide-react'
 import { supabase, generateTrackingNumber, assessSeverity, uploadComplaintPhoto, type ComplaintInput } from '../lib/supabase'
+import { useVoiceFormFiller, type VoiceFormStep } from '../lib/hooks'
 import TrueFocus from '../components/TrueFocus'
 import BubbleMenu from '../components/BubbleMenu'
 import BorderGlow from '../components/BorderGlow'
@@ -101,6 +102,50 @@ export default function AccessibilityPage() {
   const [audioGuideOn, setAudioGuideOn] = useState(false)
   const [audioStep, setAudioStep] = useState(0)
   const speechRef = useRef<SpeechSynthesisUtterance | null>(null)
+
+  const voiceSteps: VoiceFormStep[] = [
+    {
+      id: 'name',
+      label: 'name',
+      prompt: 'What is your full name?',
+      transform: (t) => t.replace(/\b\w/g, (c) => c.toUpperCase()),
+    },
+    {
+      id: 'email',
+      label: 'email address',
+      prompt: 'What is your email address? You can say it like: john dot smith at gmail dot com.',
+      transform: (t) => {
+        return t
+          .toLowerCase()
+          .replace(/\s+at\s+/g, '@')
+          .replace(/\s+dot\s+/g, '.')
+          .replace(/\s+underscore\s+/g, '_')
+          .replace(/\s+dash\s+/g, '-')
+          .replace(/\s+/g, '')
+      },
+      validate: (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v),
+    },
+    {
+      id: 'subject',
+      label: 'subject',
+      prompt: 'What is the subject or title of the accessibility issue?',
+    },
+    {
+      id: 'description',
+      label: 'issue description',
+      prompt: 'Please describe the accessibility problem you are facing in detail.',
+    },
+  ]
+
+  const voiceFiller = useVoiceFormFiller(
+    voiceSteps,
+    (id, value) => {
+      if (id === 'name' || id === 'email' || id === 'subject' || id === 'description') {
+        setForm((prev) => ({ ...prev, [id]: value }))
+      }
+    },
+    undefined
+  )
 
   const AUDIO_STEPS = [
     'Welcome to the Accessibility and Disability Support page. This audio guide will walk you through each step of submitting a report.',
@@ -425,6 +470,81 @@ export default function AccessibilityPage() {
             </div>
           )}
         </div>
+
+      <div className="accessibility-voice-fill">
+        <div className="accessibility-voice-header">
+          <div className="accessibility-voice-title-wrap">
+            <Mic size={20} />
+            <span className="accessibility-voice-title">Fill by Voice</span>
+          </div>
+          {!voiceFiller.state.supported ? (
+            <span className="accessibility-voice-unsupported">Voice input not supported in this browser. Try Chrome or Edge.</span>
+          ) : !voiceFiller.state.active ? (
+            <button
+              type="button"
+              className="accessibility-voice-toggle"
+              onClick={voiceFiller.start}
+              aria-label="Start voice form filling"
+            >
+              <Mic size={18} />
+              <span>Start Voice Fill</span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="accessibility-voice-toggle on"
+              onClick={voiceFiller.stop}
+              aria-label="Stop voice form filling"
+            >
+              <MicOff size={18} />
+              <span>Stop</span>
+            </button>
+          )}
+        </div>
+        {voiceFiller.state.active && (
+          <div className="accessibility-voice-status">
+            <div className="accessibility-voice-progress">
+              <span className="accessibility-voice-step-label">
+                Question {voiceFiller.state.currentStep + 1} of {voiceFiller.state.totalSteps}
+              </span>
+              <div className="accessibility-voice-dots">
+                {voiceSteps.map((_, i) => (
+                  <span
+                    key={i}
+                    className={`accessibility-voice-dot ${i === voiceFiller.state.currentStep ? 'active' : ''} ${i < voiceFiller.state.currentStep ? 'done' : ''}`}
+                  />
+                ))}
+              </div>
+            </div>
+            <div className="accessibility-voice-indicator">
+              {voiceFiller.state.speaking && (
+                <span className="accessibility-voice-badge speaking">
+                  <Volume2 size={14} className="voice-pulse" />
+                  Speaking...
+                </span>
+              )}
+              {voiceFiller.state.listening && (
+                <span className="accessibility-voice-badge listening">
+                  <Mic size={14} className="voice-pulse" />
+                  Listening...
+                </span>
+              )}
+              {voiceFiller.state.lastAnswer && !voiceFiller.state.speaking && !voiceFiller.state.listening && (
+                <span className="accessibility-voice-badge answered">
+                  <CheckCircle2 size={14} />
+                  {voiceFiller.state.lastAnswer}
+                </span>
+              )}
+            </div>
+            {voiceFiller.state.error && (
+              <p className="accessibility-voice-error">{voiceFiller.state.error}</p>
+            )}
+            <p className="accessibility-voice-hint">
+              Speak when prompted. The mic activates automatically after each question.
+            </p>
+          </div>
+        )}
+      </div>
 
       <form className="complaint-form" onSubmit={handleSubmit}>
         {error && (

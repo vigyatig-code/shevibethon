@@ -5888,6 +5888,180 @@ body {
   }
 }
 
+/* ===== Voice Form Filler ===== */
+.accessibility-voice-fill {
+  background: rgba(26, 18, 8, 0.45);
+  border: 1px solid rgba(169, 101, 69, 0.2);
+  border-radius: 14px;
+  padding: 18px 22px;
+  margin-bottom: 24px;
+}
+
+.accessibility-voice-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.accessibility-voice-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--civic-amber, #c4976a);
+}
+
+.accessibility-voice-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--civic-text-bright, #f9f4ec);
+  letter-spacing: 0.02em;
+}
+
+.accessibility-voice-unsupported {
+  font-size: 0.8rem;
+  color: var(--civic-muted, #9a8c7a);
+}
+
+.accessibility-voice-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  border: 1px solid rgba(169, 101, 69, 0.3);
+  border-radius: 10px;
+  background: rgba(169, 101, 69, 0.1);
+  color: var(--civic-amber, #c4976a);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+.accessibility-voice-toggle:hover {
+  background: rgba(169, 101, 69, 0.2);
+  border-color: rgba(169, 101, 69, 0.5);
+}
+
+.accessibility-voice-toggle.on {
+  background: rgba(178, 59, 59, 0.15);
+  border-color: rgba(178, 59, 59, 0.4);
+  color: #e07070;
+}
+
+.accessibility-voice-status {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(169, 101, 69, 0.15);
+}
+
+.accessibility-voice-progress {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.accessibility-voice-step-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--civic-muted, #9a8c7a);
+}
+
+.accessibility-voice-dots {
+  display: flex;
+  gap: 6px;
+}
+
+.accessibility-voice-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(169, 101, 69, 0.2);
+  transition: background 0.3s ease;
+}
+
+.accessibility-voice-dot.active {
+  background: var(--civic-amber, #c4976a);
+  box-shadow: 0 0 6px rgba(196, 151, 106, 0.5);
+}
+
+.accessibility-voice-dot.done {
+  background: var(--civic-leaf, #6b8e4e);
+}
+
+.accessibility-voice-indicator {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.accessibility-voice-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.accessibility-voice-badge.speaking {
+  background: rgba(169, 101, 69, 0.15);
+  color: var(--civic-amber, #c4976a);
+  border: 1px solid rgba(169, 101, 69, 0.3);
+}
+
+.accessibility-voice-badge.listening {
+  background: rgba(107, 142, 78, 0.15);
+  color: var(--civic-leaf, #6b8e4e);
+  border: 1px solid rgba(107, 142, 78, 0.3);
+}
+
+.accessibility-voice-badge.answered {
+  background: rgba(212, 175, 55, 0.12);
+  color: #d4af37;
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.voice-pulse {
+  animation: voice-pulse-anim 1.2s ease-in-out infinite;
+}
+
+@keyframes voice-pulse-anim {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+.accessibility-voice-error {
+  font-size: 0.8rem;
+  color: #e07070;
+  margin-bottom: 8px;
+}
+
+.accessibility-voice-hint {
+  font-size: 0.78rem;
+  color: var(--civic-muted, #9a8c7a);
+}
+
+@media (max-width: 640px) {
+  .accessibility-voice-fill {
+    padding: 14px 16px;
+  }
+  .accessibility-voice-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+}
+
 /* ===== Ripple Distortion Map View Background ===== */
 
 .mapview-page {

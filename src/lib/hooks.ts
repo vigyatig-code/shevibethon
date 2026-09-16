@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 // Intersection Observer hook for scroll-triggered reveals.
 // Returns a ref to attach and a boolean for whether it is visible.
@@ -90,6 +90,210 @@ export function useTilt<T extends HTMLElement>(
   }
 
   return { onMouseMove, onMouseLeave }
+}
+
+// ---- Voice Form Filler ----
+// Hands-free form filling using the Web Speech API.
+// Speaks a prompt, listens for the answer, fills the field, then moves on.
+
+export interface VoiceFormStep {
+  id: string
+  prompt: string
+  label: string
+  transform?: (value: string) => string
+  validate?: (value: string) => boolean
+}
+
+export interface VoiceFormFillerState {
+  active: boolean
+  currentStep: number
+  totalSteps: number
+  listening: boolean
+  speaking: boolean
+  lastAnswer: string | null
+  error: string | null
+  supported: boolean
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const SpeechRecognitionAPI: any = (typeof window !== 'undefined'
+  ? (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+  : null)
+
+export function useVoiceFormFiller(
+  steps: VoiceFormStep[],
+  onFill: (id: string, value: string) => void,
+  onComplete?: (answers: Record<string, string>) => void
+): {
+  state: VoiceFormFillerState
+  start: () => void
+  stop: () => void
+} {
+  const [active, setActive] = useState(false)
+  const [currentStep, setCurrentStep] = useState(0)
+  const [listening, setListening] = useState(false)
+  const [speaking, setSpeaking] = useState(false)
+  const [lastAnswer, setLastAnswer] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  const recognitionRef = useRef<any>(null)
+  const stepRef = useRef(0)
+  const answersRef = useRef<Record<string, string>>({})
+  const onFillRef = useRef(onFill)
+  const onCompleteRef = useRef(onComplete)
+  const stepsRef = useRef(steps)
+  const activeRef = useRef(false)
+
+  onFillRef.current = onFill
+  onCompleteRef.current = onComplete
+  stepsRef.current = steps
+
+  const supported = !!SpeechRecognitionAPI
+
+  const speak = useCallback((text: string, onEnd?: () => void) => {
+    window.speechSynthesis.cancel()
+    const utterance = new SpeechSynthesisUtterance(text)
+    utterance.rate = 0.95
+    utterance.onend = () => {
+      setSpeaking(false)
+      if (onEnd) onEnd()
+    }
+    utterance.onerror = () => {
+      setSpeaking(false)
+      if (onEnd) onEnd()
+    }
+    setSpeaking(true)
+    window.speechSynthesis.speak(utterance)
+  }, [])
+
+  const askStep = useCallback((stepIndex: number) => {
+    if (!activeRef.current) return
+    if (stepIndex >= stepsRef.current.length) {
+      speak('All done! Please review the form and submit when ready.', () => {
+        activeRef.current = false
+        setActive(false)
+        setListening(false)
+        if (onCompleteRef.current) onCompleteRef.current(answersRef.current)
+      })
+      return
+    }
+
+    const step = stepsRef.current[stepIndex]
+    setCurrentStep(stepIndex)
+    speak(step.prompt, () => {
+      if (!activeRef.current) return
+      try {
+        recognitionRef.current?.start()
+        setListening(true)
+      } catch {
+        // recognition already running
+      }
+    })
+  }, [speak])
+
+  const start = useCallback(() => {
+    if (!supported) return
+
+    if (!SpeechRecognitionAPI) return
+
+    const recognition = new SpeechRecognitionAPI()
+    recognition.lang = 'en-US'
+    recognition.continuous = false
+    recognition.interimResults = false
+    recognition.maxAlternatives = 1
+
+    recognition.onresult = (event: any) => {
+      setListening(false)
+      const transcript = event.results[0][0].transcript.trim()
+      const step = stepsRef.current[stepRef.current]
+      let value = step.transform ? step.transform(transcript) : transcript
+
+      if (step.validate && !step.validate(value)) {
+        setError(null)
+        speak(`That didn't sound like a valid ${step.label}. Let's try again.`, () => {
+          askStep(stepRef.current)
+        })
+        return
+      }
+
+      onFillRef.current(step.id, value)
+      answersRef.current[step.id] = value
+      setLastAnswer(value)
+      setError(null)
+
+      speak(`Got it. ${value}.`, () => {
+        stepRef.current++
+        askStep(stepRef.current)
+      })
+    }
+
+    recognition.onerror = (event: any) => {
+      setListening(false)
+      if (event.error === 'no-speech' || event.error === 'aborted') return
+      setError('Could not hear you clearly. Let\'s try again.')
+      speak('Sorry, I didn\'t catch that. Let\'s try again.', () => {
+        askStep(stepRef.current)
+      })
+    }
+
+    recognition.onspeechend = () => {
+      recognition.stop()
+      setListening(false)
+    }
+
+    recognitionRef.current = recognition
+    activeRef.current = true
+    stepRef.current = 0
+    answersRef.current = {}
+    setActive(true)
+    setError(null)
+    setLastAnswer(null)
+    setCurrentStep(0)
+
+    speak("Let's fill out the form together. I'll ask you a few questions.", () => {
+      askStep(0)
+    })
+  }, [supported, speak, askStep])
+
+  const stop = useCallback(() => {
+    activeRef.current = false
+    setActive(false)
+    setListening(false)
+    setSpeaking(false)
+    try {
+      recognitionRef.current?.stop()
+    } catch {
+      // already stopped
+    }
+    window.speechSynthesis.cancel()
+  }, [])
+
+  useEffect(() => {
+    return () => {
+      activeRef.current = false
+      try {
+        recognitionRef.current?.stop()
+      } catch {
+        // noop
+      }
+      window.speechSynthesis.cancel()
+    }
+  }, [])
+
+  return {
+    state: {
+      active,
+      currentStep,
+      totalSteps: steps.length,
+      listening,
+      speaking,
+      lastAnswer,
+      error,
+      supported,
+    },
+    start,
+    stop,
+  }
 }
 
 // Tracks scroll progress 0–1 for the scroll progress indicator.
