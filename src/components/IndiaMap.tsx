@@ -1,7 +1,22 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { AlertCircle, TrendingUp, TrendingDown, X, MapPin, ChevronRight } from 'lucide-react'
 import { useInView } from '../lib/hooks'
 import { indiaStatePaths } from '../lib/indiaStatePaths'
+
+function computeCentroid(d: string): { cx: number; cy: number } {
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+  svg.style.position = 'absolute'
+  svg.style.width = '0'
+  svg.style.height = '0'
+  svg.style.visibility = 'hidden'
+  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+  path.setAttribute('d', d)
+  svg.appendChild(path)
+  document.body.appendChild(svg)
+  const bbox = path.getBBox()
+  document.body.removeChild(svg)
+  return { cx: bbox.x + bbox.width / 2, cy: bbox.y + bbox.height / 2 }
+}
 
 export interface StateProblem {
   title: string
@@ -233,6 +248,14 @@ export default function IndiaMap() {
   const [selectedState, setSelectedState] = useState<string | null>(null)
   const [ref, inView] = useInView<HTMLDivElement>({ threshold: 0.2 })
 
+  const centroids = useMemo(() => {
+    const map: Record<string, { cx: number; cy: number }> = {}
+    for (const s of indiaStatePaths) {
+      map[s.name] = computeCentroid(s.d)
+    }
+    return map
+  }, [])
+
   const activeState = selectedState || hoveredState
   const activeData = activeState ? stateDataMap[activeState] : null
   const isPinned = selectedState !== null
@@ -299,14 +322,12 @@ export default function IndiaMap() {
                       <title>{s.name}{data ? ` — ${data.complaintCount.toLocaleString('en-IN')} complaints` : ''}</title>
                     </path>
                     {data && (() => {
-                      const match = s.d.match(/m\s+([\d.]+),([\d.]+)/i)
-                      if (!match) return null
-                      const cx = parseFloat(match[1])
-                      const cy = parseFloat(match[2])
+                      const c = centroids[s.name]
+                      if (!c) return null
                       return (
                         <text
-                          x={cx}
-                          y={cy}
+                          x={c.cx}
+                          y={c.cy}
                           className="india-state-label"
                           textAnchor="middle"
                           dominantBaseline="middle"
