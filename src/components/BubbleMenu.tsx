@@ -24,6 +24,7 @@ interface BubbleMenuProps {
   animationEase?: string
   animationDuration?: number
   staggerDelay?: number
+  autoOpenKey?: string | number
 }
 
 const DEFAULT_ITEMS: MenuItem[] = [
@@ -47,6 +48,7 @@ export default function BubbleMenu({
   animationEase = 'back.out(1.5)',
   animationDuration = 0.5,
   staggerDelay = 0.12,
+  autoOpenKey,
 }: BubbleMenuProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [showOverlay, setShowOverlay] = useState(false)
@@ -121,6 +123,15 @@ export default function BubbleMenu({
       })
     }
   }, [isMenuOpen, showOverlay, animationEase, animationDuration, staggerDelay])
+
+  useEffect(() => {
+    if (autoOpenKey !== undefined && !isMenuOpen) {
+      setShowOverlay(true)
+      setIsMenuOpen(true)
+      onMenuClick?.(true)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoOpenKey])
 
   useEffect(() => {
     const handleResize = () => {

@@ -283,6 +283,7 @@ export default function AccessibilityPage() {
             <BubbleMenu
               logo={<span style={{ fontWeight: 700, fontSize: '0.8rem', color: NEUTRAL_BUBBLE_TEXT }}>Issues</span>}
               items={bubbleItems}
+              autoOpenKey={disabilityType || 'default'}
               menuAriaLabel="Toggle common accessibility issues"
               menuBg={NEUTRAL_BUBBLE_BG}
               menuContentColor={NEUTRAL_BUBBLE_TEXT}
