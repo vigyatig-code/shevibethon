@@ -189,6 +189,17 @@ interface ItemCoord {
   alt: string | undefined;
 }
 
+function seededShuffle<T>(arr: T[], seed: number): T[] {
+  const result = [...arr];
+  let s = seed;
+  for (let i = result.length - 1; i > 0; i--) {
+    s = (s * 1103515245 + 12345) & 0x7fffffff;
+    const j = s % (i + 1);
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
+
 function buildItems(pool: (string | GalleryImage)[], seg: number): ItemCoord[] {
   const xCols = Array.from({ length: seg }, (_, i) => -37 + i * 2);
   const evenYs = [-4, -2, 0, 2, 4];
@@ -199,7 +210,6 @@ function buildItems(pool: (string | GalleryImage)[], seg: number): ItemCoord[] {
     return ys.map((y) => ({ x, y, sizeX: 2, sizeY: 2 }));
   });
 
-  const totalSlots = coords.length;
   if (pool.length === 0) {
     return coords.map((c) => ({ ...c, src: '', alt: '' }));
   }
@@ -211,48 +221,67 @@ function buildItems(pool: (string | GalleryImage)[], seg: number): ItemCoord[] {
     return { src: image.src || '', alt: image.alt || '' };
   });
 
-  const maxPerImage = 2;
-  const maxImages = normalizedImages.length * maxPerImage;
-  const usedImages: GalleryImage[] = [];
+  // Deterministic shuffle to scatter categories across the globe
+  const shuffled = seededShuffle(normalizedImages, 42);
 
-  if (maxImages >= totalSlots) {
-    let idx = 0;
-    for (let i = 0; i < totalSlots; i++) {
-      usedImages.push(normalizedImages[idx]);
-      idx = (idx + 1) % normalizedImages.length;
-    }
-  } else {
-    for (let i = 0; i < totalSlots; i++) {
-      usedImages.push(normalizedImages[i % normalizedImages.length]);
-    }
-  }
+  // Track which images are used in each row (by Y value)
+  const rowUsed = new Map<number, Set<string>>();
+  // Track the last column where each image was placed
+  const lastCol = new Map<string, number>();
+  // Track usage count per image
+  const useCount = new Map<string, number>();
 
-  // Interleave: sort by a hash of src so categories are scattered around the globe
-  const interleave = [...usedImages];
-  interleave.sort((a, b) => {
-    const ha = a.src.split('/').pop() || a.src;
-    const hb = b.src.split('/').pop() || b.src;
-    return ha < hb ? -1 : ha > hb ? 1 : 0;
-  });
-  interleave.forEach((img, i) => { usedImages[i] = img; });
+  // Sort coords by column (x) then row (y) to fill column-by-column
+  const sortedCoords = [...coords].sort((a, b) => a.x - b.x || a.y - b.y);
 
-  for (let i = 1; i < usedImages.length; i++) {
-    if (usedImages[i].src === usedImages[i - 1].src) {
-      for (let j = i + 1; j < usedImages.length; j++) {
-        if (usedImages[j].src !== usedImages[i].src) {
-          const tmp = usedImages[i];
-          usedImages[i] = usedImages[j];
-          usedImages[j] = tmp;
-          break;
-        }
+  const assignments: { src: string; alt: string | undefined; coord: { x: number; y: number; sizeX: number; sizeY: number } }[] = [];
+
+  for (const coord of sortedCoords) {
+    const rowSet = rowUsed.get(coord.y) ?? new Set<string>();
+
+    let best: GalleryImage | null = null;
+    let bestScore = -Infinity;
+
+    for (const img of shuffled) {
+      if (rowSet.has(img.src)) continue;
+
+      const count = useCount.get(img.src) ?? 0;
+      const lastC = lastCol.get(img.src) ?? -1000;
+      const distance = coord.x - lastC;
+
+      const score = -count * 1000 + distance;
+
+      if (score > bestScore) {
+        bestScore = score;
+        best = img;
       }
     }
+
+    if (!best) {
+      let leastUsed = shuffled[0];
+      let minCount = Infinity;
+      for (const img of shuffled) {
+        const c = useCount.get(img.src) ?? 0;
+        if (c < minCount) {
+          minCount = c;
+          leastUsed = img;
+        }
+      }
+      best = leastUsed;
+    }
+
+    assignments.push({ src: best.src, alt: best.alt, coord });
+
+    if (!rowUsed.has(coord.y)) rowUsed.set(coord.y, new Set());
+    rowUsed.get(coord.y)!.add(best.src);
+    lastCol.set(best.src, coord.x);
+    useCount.set(best.src, (useCount.get(best.src) ?? 0) + 1);
   }
 
-  return coords.map((c, i) => ({
-    ...c,
-    src: usedImages[i].src,
-    alt: usedImages[i].alt,
+  return assignments.map((a) => ({
+    ...a.coord,
+    src: a.src,
+    alt: a.alt,
   }));
 }
 
@@ -286,7 +315,7 @@ export default function DomeGallery({
   openedImageHeight = '400px',
   imageBorderRadius = '30px',
   openedImageBorderRadius = '30px',
-  grayscale = true,
+  grayscale = false,
   autoRotateSpeed = 0,
 }: DomeGalleryProps) {
   const rootRef = useRef<HTMLDivElement>(null);
