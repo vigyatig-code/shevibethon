@@ -104,7 +104,7 @@ export default function OpeningSplash({ onComplete }: { onComplete: () => void }
       className={`civic-opening-splash phase-${phase}`}
       aria-hidden="true"
     >
-      {phase !== 'finale' && (
+      {phase === 'flashing' && (
         <div className="civic-opening-splash-images">
           {CIVIC_ISSUE_IMAGES.map((img, i) => (
             <img
@@ -118,7 +118,7 @@ export default function OpeningSplash({ onComplete }: { onComplete: () => void }
           ))}
         </div>
       )}
-      {phase !== 'finale' && (
+      {phase === 'flashing' && (
         <div className="civic-opening-splash-label">
           <span
             key={currentIndex}
@@ -128,7 +128,7 @@ export default function OpeningSplash({ onComplete }: { onComplete: () => void }
           </span>
         </div>
       )}
-      {phase === 'finale' && (
+      {(phase === 'finale' || phase === 'exiting') && (
         <div className="civic-opening-splash-finale">
           <div className="civic-opening-splash-finale-glow" />
           <div className="civic-opening-splash-finale-content">
