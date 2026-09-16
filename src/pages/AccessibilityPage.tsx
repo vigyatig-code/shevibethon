@@ -1,6 +1,6 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { Accessibility, CheckCircle2, AlertCircle, Loader2, Lock, Camera, X, Heart, Eye, Ear, Brain, Footprints } from 'lucide-react'
+import { Accessibility, CheckCircle2, AlertCircle, Loader2, Lock, Camera, X, Heart, Eye, Ear, Brain, Footprints, Volume2, VolumeX } from 'lucide-react'
 import { supabase, generateTrackingNumber, assessSeverity, uploadComplaintPhoto, type ComplaintInput } from '../lib/supabase'
 import TrueFocus from '../components/TrueFocus'
 import BubbleMenu from '../components/BubbleMenu'
@@ -97,6 +97,66 @@ export default function AccessibilityPage() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<{ trackingNumber: string } | null>(null)
+  const [audioGuideOn, setAudioGuideOn] = useState(false)
+  const [audioStep, setAudioStep] = useState(0)
+  const speechRef = useRef<SpeechSynthesisUtterance | null>(null)
+
+  const AUDIO_STEPS = [
+    'Welcome to the Accessibility and Disability Support page. This audio guide will walk you through each step of submitting a report.',
+    'Step 1. Select your disability type. Tap one of the cards below. For example, Visual Impairment, Hearing Impairment, Mobility, Cognitive, or Multiple Disabilities. This is optional but helps us categorize your report.',
+    'Step 2. Choose a common issue. When you select a disability type, a bubble menu will appear with common issues. Tap a bubble to select the issue that best matches your situation. This will fill in the subject field for you.',
+    'Step 3. Enter your full name and email address in the contact section. These are required so we can follow up with you about your report.',
+    'Step 4. Review the subject field. If you selected an issue from the bubbles, it is already filled in. You can also type your own subject if you prefer.',
+    'Step 5. Write a detailed description of the accessibility barrier or issue you experienced. The more detail you provide, the better we can help.',
+    'Step 6. Optionally, add a photo. Tap the upload area to select an image from your device. This helps us see the problem directly.',
+    'Step 7. When you are ready, tap the Submit Report button at the bottom. Your report will be submitted with high priority and you will receive a tracking number to check its status later.',
+  ]
+
+  const speak = useCallback((text: string) => {
+    if (!('speechSynthesis' in window)) return
+    window.speechSynthesis.cancel()
+    const utterance = new SpeechSynthesisUtterance(text)
+    utterance.rate = 0.9
+    utterance.pitch = 1
+    utterance.volume = 1
+    speechRef.current = utterance
+    window.speechSynthesis.speak(utterance)
+  }, [])
+
+  const stopSpeaking = useCallback(() => {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel()
+    }
+    speechRef.current = null
+  }, [])
+
+  const playStep = useCallback((step: number) => {
+    if (step < 0 || step >= AUDIO_STEPS.length) return
+    setAudioStep(step)
+    speak(AUDIO_STEPS[step])
+  }, [speak, AUDIO_STEPS])
+
+  const toggleAudioGuide = () => {
+    if (audioGuideOn) {
+      stopSpeaking()
+      setAudioGuideOn(false)
+    } else {
+      setAudioGuideOn(true)
+      playStep(0)
+    }
+  }
+
+  const nextStep = () => {
+    if (audioStep < AUDIO_STEPS.length - 1) playStep(audioStep + 1)
+  }
+
+  const prevStep = () => {
+    if (audioStep > 0) playStep(audioStep - 1)
+  }
+
+  useEffect(() => {
+    return () => stopSpeaking()
+  }, [stopSpeaking])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value })
@@ -264,6 +324,72 @@ export default function AccessibilityPage() {
           ))}
         </div>
       </div>
+
+      {disabilityType === 'Visual Impairment' && (
+        <div className="accessibility-audio-guide">
+          <div className="accessibility-audio-header">
+            <div className="accessibility-audio-title-wrap">
+              <Volume2 size={20} />
+              <span className="accessibility-audio-title">Audio Guide for Visually Impaired</span>
+            </div>
+            <button
+              type="button"
+              className={`accessibility-audio-toggle ${audioGuideOn ? 'on' : ''}`}
+              onClick={toggleAudioGuide}
+              aria-label={audioGuideOn ? 'Turn off audio guide' : 'Turn on audio guide'}
+            >
+              {audioGuideOn ? <Volume2 size={18} /> : <VolumeX size={18} />}
+              <span>{audioGuideOn ? 'On' : 'Off'}</span>
+            </button>
+          </div>
+          {audioGuideOn && (
+            <div className="accessibility-audio-controls">
+              <div className="accessibility-audio-progress">
+                <span className="accessibility-audio-step-label">
+                  Step {audioStep + 1} of {AUDIO_STEPS.length}
+                </span>
+                <div className="accessibility-audio-dots">
+                  {AUDIO_STEPS.map((_, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      className={`accessibility-audio-dot ${i === audioStep ? 'active' : ''} ${i < audioStep ? 'done' : ''}`}
+                      onClick={() => playStep(i)}
+                      aria-label={`Go to step ${i + 1}`}
+                    />
+                  ))}
+                </div>
+              </div>
+              <p className="accessibility-audio-text">{AUDIO_STEPS[audioStep]}</p>
+              <div className="accessibility-audio-buttons">
+                <button
+                  type="button"
+                  className="accessibility-audio-btn"
+                  onClick={prevStep}
+                  disabled={audioStep === 0}
+                >
+                  Previous
+                </button>
+                <button
+                  type="button"
+                  className="accessibility-audio-btn replay"
+                  onClick={() => playStep(audioStep)}
+                >
+                  Replay
+                </button>
+                <button
+                  type="button"
+                  className="accessibility-audio-btn"
+                  onClick={nextStep}
+                  disabled={audioStep === AUDIO_STEPS.length - 1}
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       <form className="complaint-form" onSubmit={handleSubmit}>
         {error && (

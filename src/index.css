@@ -5630,6 +5630,163 @@ body {
   }
 }
 
+/* ===== Audio Guide for Visually Impaired ===== */
+.accessibility-audio-guide {
+  margin-bottom: 24px;
+  padding: 20px 24px;
+  border-radius: var(--radius-md, 14px);
+  background: rgba(169, 101, 69, 0.08);
+  border: 1px solid rgba(169, 101, 69, 0.2);
+  animation: slide-up 0.35s ease;
+}
+
+.accessibility-audio-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.accessibility-audio-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--civic-text-bright, #f9f4ec);
+}
+
+.accessibility-audio-title {
+  font-family: var(--font-serif, Georgia, serif);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.accessibility-audio-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: 1px solid rgba(169, 101, 69, 0.3);
+  border-radius: 20px;
+  background: transparent;
+  color: var(--civic-text, #d4c9b8);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.accessibility-audio-toggle:hover {
+  border-color: rgba(169, 101, 69, 0.5);
+  background: rgba(169, 101, 69, 0.06);
+}
+
+.accessibility-audio-toggle.on {
+  background: rgba(169, 101, 69, 0.18);
+  border-color: rgba(169, 101, 69, 0.45);
+  color: #c4976a;
+}
+
+.accessibility-audio-controls {
+  margin-top: 16px;
+}
+
+.accessibility-audio-progress {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.accessibility-audio-step-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--civic-muted, #a89888);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.accessibility-audio-dots {
+  display: flex;
+  gap: 8px;
+}
+
+.accessibility-audio-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1px solid rgba(169, 101, 69, 0.35);
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.2s ease;
+}
+
+.accessibility-audio-dot.done {
+  background: rgba(169, 101, 69, 0.3);
+}
+
+.accessibility-audio-dot.active {
+  background: #c4976a;
+  border-color: #c4976a;
+  box-shadow: 0 0 8px rgba(196, 151, 106, 0.5);
+  transform: scale(1.2);
+}
+
+.accessibility-audio-text {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--civic-text-bright, #f9f4ec);
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: rgba(26, 18, 8, 0.35);
+  margin-bottom: 14px;
+}
+
+.accessibility-audio-buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.accessibility-audio-btn {
+  padding: 8px 18px;
+  border: 1px solid rgba(169, 101, 69, 0.25);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--civic-text, #d4c9b8);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.accessibility-audio-btn:hover:not(:disabled) {
+  border-color: rgba(169, 101, 69, 0.45);
+  background: rgba(169, 101, 69, 0.08);
+  color: #c4976a;
+}
+
+.accessibility-audio-btn.replay {
+  background: rgba(169, 101, 69, 0.1);
+  border-color: rgba(169, 101, 69, 0.3);
+}
+
+.accessibility-audio-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+@media (max-width: 640px) {
+  .accessibility-audio-guide {
+    padding: 16px 18px;
+  }
+  .accessibility-audio-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+}
+
 /* ===== Ripple Distortion Map View Background ===== */
 
 .mapview-page {
