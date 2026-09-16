@@ -1,6 +1,6 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useCallback } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { FileText, CheckCircle2, AlertCircle, Loader2, Lock, Camera, X } from 'lucide-react'
+import { FileText, CheckCircle2, AlertCircle, Loader2, Lock, Camera, X, MapPin, Navigation, Check } from 'lucide-react'
 import { supabase, CATEGORIES, generateTrackingNumber, assessSeverity, uploadComplaintPhoto, type ComplaintInput } from '../lib/supabase'
 import TrueFocus from '../components/TrueFocus'
 
@@ -19,6 +19,50 @@ export default function FileComplaint() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<{ trackingNumber: string } | null>(null)
+
+  type LocationState = 'idle' | 'requesting' | 'granted' | 'denied' | 'error'
+  const [locationState, setLocationState] = useState<LocationState>('idle')
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null)
+  const [locationName, setLocationName] = useState('')
+  const [locationLoading, setLocationLoading] = useState(false)
+
+  const requestLocation = useCallback(() => {
+    if (!navigator.geolocation) {
+      setLocationState('error')
+      return
+    }
+    setLocationState('requesting')
+    setLocationLoading(true)
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords
+        setCoords({ lat: latitude, lng: longitude })
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`,
+            { headers: { 'Accept': 'application/json' } }
+          )
+          if (res.ok) {
+            const data = await res.json()
+            const addr = data.display_name || data.address?.suburb || data.address?.city || ''
+            setLocationName(addr)
+          }
+        } catch {
+          // reverse geocode failed — user can type manually
+        }
+        setLocationState('granted')
+        setLocationLoading(false)
+      },
+      (err) => {
+        setLocationState('denied')
+        setLocationLoading(false)
+        if (err.code === err.PERMISSION_DENIED) {
+          // user denied — they can type manually
+        }
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 300000 }
+    )
+  }, [])
 
   const completedSteps = [
     !!(form.name && form.email),
@@ -79,6 +123,9 @@ export default function FileComplaint() {
           priority: 'Normal',
           severity: severity,
           photo_url: photoUrl,
+          latitude: coords?.lat ?? null,
+          longitude: coords?.lng ?? null,
+          location_name: locationName.trim() || null,
         })
 
       if (insertError) throw insertError
@@ -235,6 +282,67 @@ export default function FileComplaint() {
             maxLength={5000}
           />
           <span className="char-count">{form.description.length} / 5000</span>
+        </div>
+
+        <div className="form-group">
+          <label>Location</label>
+          {locationState === 'idle' && (
+            <div className="location-prompt">
+              <button type="button" className="btn btn-ghost" onClick={requestLocation}>
+                <Navigation size={18} />
+                Share my location
+              </button>
+              <span className="location-hint">Or enter an address manually below</span>
+            </div>
+          )}
+          {locationState === 'requesting' && (
+            <div className="location-loading">
+              <Loader2 size={18} className="spin" />
+              <span>Detecting your location...</span>
+            </div>
+          )}
+          {locationState === 'granted' && coords && (
+            <div className="location-granted">
+              <div className="location-granted-row">
+                <Check size={16} />
+                <span>Location detected</span>
+                <button type="button" className="location-retry" onClick={requestLocation}>
+                  Retry
+                </button>
+              </div>
+              {locationLoading && <span className="location-hint">Looking up address...</span>}
+            </div>
+          )}
+          {locationState === 'denied' && (
+            <div className="location-denied">
+              <AlertCircle size={16} />
+              <span>Location access denied. Enter your address manually below.</span>
+              <button type="button" className="location-retry" onClick={requestLocation}>
+                Try again
+              </button>
+            </div>
+          )}
+          {locationState === 'error' && (
+            <div className="location-denied">
+              <AlertCircle size={16} />
+              <span>Geolocation not supported. Enter your address manually below.</span>
+            </div>
+          )}
+          <input
+            type="text"
+            name="locationName"
+            value={locationName}
+            onChange={(e) => setLocationName(e.target.value)}
+            placeholder="Enter your area or address (e.g. Indiranagar, Bengaluru)"
+            maxLength={300}
+            className="location-input"
+          />
+          {coords && (
+            <span className="location-coords">
+              <MapPin size={12} />
+              {coords.lat.toFixed(4)}, {coords.lng.toFixed(4)}
+            </span>
+          )}
         </div>
 
         <div className="form-group">

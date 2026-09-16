@@ -616,31 +616,31 @@ body {
   height: 100%;
   object-fit: cover;
   opacity: 0;
-  transform: scale(1.08);
-  transition: opacity 0.3s ease-in, transform 0.65s ease-out;
-  will-change: opacity, transform;
+  transform: scale(1.05);
+  transition: opacity 0.4s ease-in;
+  will-change: opacity;
 }
 
 .civic-opening-splash-images img.active {
   opacity: 1;
   transform: scale(1);
-  animation: civic-slash-flash 0.65s ease-out;
+  animation: civic-slash-flash 0.5s ease-out;
 }
 
 @keyframes civic-slash-flash {
   0% {
     opacity: 0;
-    transform: scale(1.12) translateX(2%);
-    filter: brightness(1.15) contrast(1.05);
+  transform: scale(1.08);
+    filter: brightness(1.1);
   }
   30% {
     opacity: 1;
-    filter: brightness(1) contrast(1);
+    filter: brightness(1);
   }
   100% {
     opacity: 1;
-    transform: scale(1) translateX(0);
-    filter: brightness(0.95) contrast(1);
+    transform: scale(1);
+    filter: brightness(0.95);
   }
 }
 
@@ -4260,6 +4260,98 @@ body {
 .immutability-note svg {
   flex-shrink: 0;
   color: var(--civic-muted);
+}
+
+/* Location section in complaint form */
+.location-prompt {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.location-hint {
+  font-size: 0.8rem;
+  color: var(--civic-muted);
+}
+
+.location-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--civic-muted);
+  font-size: 0.875rem;
+}
+
+.location-granted {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.location-granted-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--civic-leaf);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.location-denied {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #e07070;
+  font-size: 0.825rem;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.location-retry {
+  background: none;
+  border: none;
+  color: var(--civic-amber);
+  font-size: 0.8rem;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+}
+
+.location-retry:hover {
+  color: var(--civic-leaf);
+}
+
+.location-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--civic-border);
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+  font-family: var(--font-body);
+  color: var(--civic-text-bright);
+  background: rgba(249, 244, 236, 0.5);
+  transition: border-color 0.2s ease;
+  margin-top: 8px;
+}
+
+.location-input::placeholder {
+  color: var(--civic-muted);
+}
+
+.location-input:focus {
+  outline: none;
+  border-color: rgba(169, 101, 69, 0.4);
+}
+
+.location-coords {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: var(--civic-muted);
+  font-family: 'Courier New', monospace;
+  margin-top: 4px;
 }
 
 /* Success card */

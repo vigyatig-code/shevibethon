@@ -2,53 +2,53 @@ import { useEffect, useState, useRef, useCallback } from 'react'
 
 const CIVIC_ISSUE_IMAGES = [
   {
-    src: 'https://images.pexels.com/photos/20518249/pexels-photo-20518249.jpeg?auto=compress&cs=tinysrgb&w=1600',
+    src: 'https://images.pexels.com/photos/20518249/pexels-photo-20518249.jpeg?auto=compress&cs=tinysrgb&w=1200',
     label: 'Potholes',
   },
   {
-    src: 'https://images.pexels.com/photos/28447789/pexels-photo-28447789.jpeg?auto=compress&cs=tinysrgb&w=1600',
+    src: 'https://images.pexels.com/photos/28447789/pexels-photo-28447789.jpeg?auto=compress&cs=tinysrgb&w=1200',
     label: 'Sewage Overflow',
   },
   {
-    src: 'https://images.pexels.com/photos/34158878/pexels-photo-34158878.jpeg?auto=compress&cs=tinysrgb&w=1600',
+    src: 'https://images.pexels.com/photos/34158878/pexels-photo-34158878.jpeg?auto=compress&cs=tinysrgb&w=1200',
     label: 'Water Leakage',
   },
   {
-    src: 'https://images.pexels.com/photos/34610704/pexels-photo-34610704.jpeg?auto=compress&cs=tinysrgb&w=1600',
+    src: 'https://images.pexels.com/photos/34610704/pexels-photo-34610704.jpeg?auto=compress&cs=tinysrgb&w=1200',
     label: 'Power Cuts',
   },
   {
-    src: 'https://images.pexels.com/photos/11502452/pexels-photo-11502452.jpeg?auto=compress&cs=tinysrgb&w=1600',
+    src: 'https://images.pexels.com/photos/11502452/pexels-photo-11502452.jpeg?auto=compress&cs=tinysrgb&w=1200',
     label: 'Parking Issues',
   },
   {
-    src: 'https://images.pexels.com/photos/2382894/pexels-photo-2382894.jpeg?auto=compress&cs=tinysrgb&w=1600',
+    src: 'https://images.pexels.com/photos/2382894/pexels-photo-2382894.jpeg?auto=compress&cs=tinysrgb&w=1200',
     label: 'Garbage Piles',
   },
   {
-    src: 'https://images.pexels.com/photos/26202091/pexels-photo-26202091.jpeg?auto=compress&cs=tinysrgb&w=1600',
+    src: 'https://images.pexels.com/photos/26202091/pexels-photo-26202091.jpeg?auto=compress&cs=tinysrgb&w=1200',
     label: 'Waterlogging',
   },
   {
-    src: 'https://images.pexels.com/photos/9953451/pexels-photo-9953451.jpeg?auto=compress&cs=tinysrgb&w=1600',
+    src: 'https://images.pexels.com/photos/9953451/pexels-photo-9953451.jpeg?auto=compress&cs=tinysrgb&w=1200',
     label: 'Broken Street Lights',
   },
   {
-    src: 'https://images.pexels.com/photos/12326415/pexels-photo-12326415.jpeg?auto=compress&cs=tinysrgb&w=1600',
+    src: 'https://images.pexels.com/photos/12326415/pexels-photo-12326415.jpeg?auto=compress&cs=tinysrgb&w=1200',
     label: 'Cracked Infrastructure',
   },
   {
-    src: 'https://images.pexels.com/photos/11849379/pexels-photo-11849379.jpeg?auto=compress&cs=tinysrgb&w=1600',
+    src: 'https://images.pexels.com/photos/11849379/pexels-photo-11849379.jpeg?auto=compress&cs=tinysrgb&w=1200',
     label: 'Broken Roads',
   },
   {
-    src: 'https://images.pexels.com/photos/15954727/pexels-photo-15954727.jpeg?auto=compress&cs=tinysrgb&w=1600',
+    src: 'https://images.pexels.com/photos/15954727/pexels-photo-15954727.jpeg?auto=compress&cs=tinysrgb&w=1200',
     label: 'Drainage Problems',
   },
 ]
 
-const FLASH_DURATION = 650
-const FINALE_HOLD = 2600
+const FLASH_DURATION = 900
+const FINALE_HOLD = 4200
 
 export default function OpeningSplash({ onComplete }: { onComplete: () => void }) {
   const [currentIndex, setCurrentIndex] = useState(0)
