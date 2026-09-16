@@ -29,89 +29,112 @@ interface DomeGalleryProps {
 }
 
 const DEFAULT_IMAGES: GalleryImage[] = [
-  // Roads & Infrastructure
-  { src: 'https://images.pexels.com/photos/11849379/pexels-photo-11849379.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Damaged concrete structure with exposed rebar — urban decay' },
+  // Roads & Infrastructure — India
+  { src: 'https://images.pexels.com/photos/35662660/pexels-photo-35662660.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'JCB backhoe and tractor at roadside construction in India' },
+  { src: 'https://images.pexels.com/photos/16577231/pexels-photo-16577231.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Urban decay and reconstruction efforts in Puri, India' },
+  { src: 'https://images.pexels.com/photos/10133569/pexels-photo-10133569.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Person walking on cracked urban street' },
+  { src: 'https://images.pexels.com/photos/12221672/pexels-photo-12221672.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Bustling Mumbai street with autorickshaws and pedestrians' },
+  { src: 'https://images.pexels.com/photos/8407917/pexels-photo-8407917.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Wet road in New Delhi with car driving away on cloudy day' },
+  { src: 'https://images.pexels.com/photos/19764951/pexels-photo-19764951.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Lively street in Mumbai with scooters and old buildings' },
+  { src: 'https://images.pexels.com/photos/36867768/pexels-photo-36867768.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Street scene in Kolkata with lush trees and minimal traffic' },
+  { src: 'https://images.pexels.com/photos/37934901/pexels-photo-37934901.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Busy street scene in Ludhiana, Punjab with cars and people' },
+  { src: 'https://images.pexels.com/photos/4428283/pexels-photo-4428283.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Woman in saree on busy street in Goa, India amidst traffic' },
   { src: 'https://images.pexels.com/photos/5688465/pexels-photo-5688465.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Cracks and potholes on aged asphalt road' },
-  { src: 'https://images.pexels.com/photos/9963247/pexels-photo-9963247.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Cracked asphalt road with repair patches' },
-  { src: 'https://images.pexels.com/photos/30667997/pexels-photo-30667997.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Street construction with traffic barriers' },
-  { src: 'https://images.pexels.com/photos/6020593/pexels-photo-6020593.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Road construction with machinery and safety barriers' },
-  { src: 'https://images.pexels.com/photos/35851867/pexels-photo-35851867.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Collapsed pedestrian crossing sign on urban street' },
-  { src: 'https://images.pexels.com/photos/2847615/pexels-photo-2847615.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Cracked pavement with buildings in background' },
-  { src: 'https://images.pexels.com/photos/30319634/pexels-photo-30319634.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Ruined bridge over river — infrastructure decay' },
-  { src: 'https://images.pexels.com/photos/7017620/pexels-photo-7017620.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Urban demolition with rubble and standing tower' },
-  { src: 'https://images.pexels.com/photos/11471977/pexels-photo-11471977.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Unfinished bridge construction over river' },
+  { src: 'https://images.pexels.com/photos/9963247/pexels-photo-9963247.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Cracked asphalt road with visible repair patches' },
 
-  // Water & Drainage
-  { src: 'https://images.pexels.com/photos/25189241/pexels-photo-25189241.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Flooded street in Kolkata after monsoon rains' },
-  { src: 'https://images.pexels.com/photos/26202081/pexels-photo-26202081.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Cyclist through flooded street in Kolkata' },
-  { src: 'https://images.pexels.com/photos/26202091/pexels-photo-26202091.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Cars navigate flooded street in Kolkata' },
-  { src: 'https://images.pexels.com/photos/17609960/pexels-photo-17609960.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Rickshaw navigates flooded street in Delhi' },
-  { src: 'https://images.pexels.com/photos/24797143/pexels-photo-24797143.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Car drives through flooded streets in Kolkata' },
-  { src: 'https://images.pexels.com/photos/30309542/pexels-photo-30309542.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Motorcyclist through waterlogged streets in monsoon' },
+  // Water & Drainage — India (Kolkata, Delhi monsoon flooding)
+  { src: 'https://images.pexels.com/photos/26202091/pexels-photo-26202091.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Cars navigate flooded street in Kolkata during heavy rain' },
+  { src: 'https://images.pexels.com/photos/21617984/pexels-photo-21617984.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Flooded Kolkata street with rickshaw and pedestrian' },
+  { src: 'https://images.pexels.com/photos/21960689/pexels-photo-21960689.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Flooded street scene in Kolkata with vehicles and people' },
+  { src: 'https://images.pexels.com/photos/17609960/pexels-photo-17609960.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Rickshaw navigates flooded street in New Delhi during monsoon' },
+  { src: 'https://images.pexels.com/photos/30309542/pexels-photo-30309542.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Motorcyclist rides through waterlogged streets in Kolkata' },
+  { src: 'https://images.pexels.com/photos/25189241/pexels-photo-25189241.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Kolkata street flooded after heavy monsoon rains' },
   { src: 'https://images.pexels.com/photos/27567485/pexels-photo-27567485.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Motorcyclists ride through flooded street in Kolkata' },
-  { src: 'https://images.pexels.com/photos/38551000/pexels-photo-38551000.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Rickshaw puller navigates flooded urban street' },
-  { src: 'https://images.pexels.com/photos/14216445/pexels-photo-14216445.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Flooded urban street with palm trees and puddles' },
-  { src: 'https://images.pexels.com/photos/31172239/pexels-photo-31172239.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Urban street puddle reflecting buildings' },
+  { src: 'https://images.pexels.com/photos/21617983/pexels-photo-21617983.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Car driving through flooded street in Kolkata' },
+  { src: 'https://images.pexels.com/photos/21960706/pexels-photo-21960706.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Car navigates flooded street in Kolkata' },
+  { src: 'https://images.pexels.com/photos/21961065/pexels-photo-21961065.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Motorcyclist rides through flooded street in Kolkata' },
+  { src: 'https://images.pexels.com/photos/24797143/pexels-photo-24797143.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Blue car drives through flooded streets in Kolkata' },
+  { src: 'https://images.pexels.com/photos/23939154/pexels-photo-23939154.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Motorcyclists navigate through flooded street in Kolkata' },
+  { src: 'https://images.pexels.com/photos/21617980/pexels-photo-21617980.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Heavy rain floods Kolkata streets with bikes and rickshaws' },
+  { src: 'https://images.pexels.com/photos/26146700/pexels-photo-26146700.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Yellow taxi battles flooding on streets in Kolkata' },
+  { src: 'https://images.pexels.com/photos/38521937/pexels-photo-38521937.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Man and child cycling through flooded street in Kolkata' },
 
-  // Waste & Sanitation
-  { src: 'https://images.pexels.com/photos/4651148/pexels-photo-4651148.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Garbage bags piled on cobblestone street corner' },
-  { src: 'https://images.pexels.com/photos/14430163/pexels-photo-14430163.png?auto=compress&cs=tinysrgb&w=800', alt: 'Piles of garbage bags in outdoor waste disposal area' },
-  { src: 'https://images.pexels.com/photos/5789369/pexels-photo-5789369.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Black trash bags stacked in front of urban graffiti' },
-  { src: 'https://images.pexels.com/photos/27607950/pexels-photo-27607950.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Overflowing trash bins on a city street' },
+  // Waste & Sanitation — India
+  { src: 'https://images.pexels.com/photos/2570304/pexels-photo-2570304.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Man collects trash in urban setting in Noida, India' },
+  { src: 'https://images.pexels.com/photos/14430163/pexels-photo-14430163.png?auto=compress&cs=tinysrgb&w=800', alt: 'Piles of garbage bags stacked in outdoor waste disposal area' },
+  { src: 'https://images.pexels.com/photos/2382894/pexels-photo-2382894.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Trash-filled streets with urban buildings in South Asia' },
+  { src: 'https://images.pexels.com/photos/8800289/pexels-photo-8800289.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Discarded textile bags in a recycling pile — waste management' },
+  { src: 'https://images.pexels.com/photos/15528024/pexels-photo-15528024.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Busy alleyway in Mumbai with stacked bags and urban life' },
   { src: 'https://images.pexels.com/photos/6777374/pexels-photo-6777374.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Trolley with trash in dirty alley between old buildings' },
-  { src: 'https://images.pexels.com/photos/2382894/pexels-photo-2382894.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Trash-filled streets with urban buildings in Bangladesh' },
-  { src: 'https://images.pexels.com/photos/28238393/pexels-photo-28238393.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Overflowing trash bin and scattered garbage at night' },
-  { src: 'https://images.pexels.com/photos/15847992/pexels-photo-15847992.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Overflowing garbage bin on cobblestone street' },
-  { src: 'https://images.pexels.com/photos/12841982/pexels-photo-12841982.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Rusty dumpster with piled trash bags on sidewalk' },
-  { src: 'https://images.pexels.com/photos/13537446/pexels-photo-13537446.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Pile of mixed waste at urban landfill' },
+  { src: 'https://images.pexels.com/photos/5789369/pexels-photo-5789369.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Black trash bags stacked in front of urban graffiti' },
+  { src: 'https://images.pexels.com/photos/36040842/pexels-photo-36040842.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Broken plastic container with scattered debris — urban waste' },
+  { src: 'https://images.pexels.com/photos/13537446/pexels-photo-13537446.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Pile of mixed waste at sprawling urban landfill' },
+  { src: 'https://images.pexels.com/photos/6316243/pexels-photo-6316243.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Overflowing bins and garbage in urban parking lot' },
 
-  // Street Lighting
-  { src: 'https://images.pexels.com/photos/34639900/pexels-photo-34639900.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Dimly lit street with rows of glowing lamp posts at night' },
-  { src: 'https://images.pexels.com/photos/5554030/pexels-photo-5554030.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Berlin street at night with illuminated street lamps' },
+  // Street Lighting — India
   { src: 'https://images.pexels.com/photos/5209703/pexels-photo-5209703.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Quiet New Delhi street at night illuminated by streetlights' },
-  { src: 'https://images.pexels.com/photos/17139318/pexels-photo-17139318.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Two streetlamps casting light at night in urban setting' },
-  { src: 'https://images.pexels.com/photos/13140025/pexels-photo-13140025.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Deserted parking lot with street lights at night' },
-  { src: 'https://images.pexels.com/photos/9313773/pexels-photo-9313773.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Nighttime street scene with glowing street lamps' },
-  { src: 'https://images.pexels.com/photos/9807634/pexels-photo-9807634.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Foggy night road illuminated by bright street lamps' },
-  { src: 'https://images.pexels.com/photos/12700824/pexels-photo-12700824.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Dimly lit urban street and underpass at night' },
-  { src: 'https://images.pexels.com/photos/9807646/pexels-photo-9807646.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Fog-covered dark street illuminated by single streetlight' },
-  { src: 'https://images.pexels.com/photos/6348032/pexels-photo-6348032.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Vintage street lamp illuminates falling snow at night' },
+  { src: 'https://images.pexels.com/photos/14665061/pexels-photo-14665061.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Silhouetted figures walking under streetlights in Ratnagiri, India' },
+  { src: 'https://images.pexels.com/photos/29720899/pexels-photo-29720899.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Foggy night scene with yellow road barriers and streetlights' },
+  { src: 'https://images.pexels.com/photos/19426552/pexels-photo-19426552.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Person silhouette at night on street in Kolkata with buses' },
+  { src: 'https://images.pexels.com/photos/16101562/pexels-photo-16101562.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Nighttime city street with illuminated path and moving truck' },
 
-  // Public Safety
-  { src: 'https://images.pexels.com/photos/10480618/pexels-photo-10480618.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Police officer detaining suspect near crime scene at night' },
-  { src: 'https://images.pexels.com/photos/28368185/pexels-photo-28368185.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Urban crime scene marked with yellow police tape' },
-  { src: 'https://images.pexels.com/photos/10481285/pexels-photo-10481285.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Yellow stop tape at night crime scene' },
-  { src: 'https://images.pexels.com/photos/35677589/pexels-photo-35677589.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Police tape against graffiti-covered wall — crime scene' },
-  { src: 'https://images.pexels.com/photos/10649927/pexels-photo-10649927.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Yellow caution tape on pavement — danger warning' },
-  { src: 'https://images.pexels.com/photos/30650728/pexels-photo-30650728.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Police officer on motorcycle with flashing lights' },
-  { src: 'https://images.pexels.com/photos/10481289/pexels-photo-10481289.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Police car with flashing lights at nighttime crime scene' },
-  { src: 'https://images.pexels.com/photos/18527688/pexels-photo-18527688.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Yellow police crime scene tape on concrete ground' },
-  { src: 'https://images.pexels.com/photos/6804261/pexels-photo-6804261.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Policemen escort handcuffed prisoner along city street' },
-  { src: 'https://images.pexels.com/photos/12727656/pexels-photo-12727656.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Police cars and officers in urban street at night' },
+  // Public Safety — India
+  { src: 'https://images.pexels.com/photos/4496624/pexels-photo-4496624.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Police officer in uniform near patrol car in Uttar Pradesh' },
+  { src: 'https://images.pexels.com/photos/26971842/pexels-photo-26971842.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Four policemen standing on street in Mumbai, India' },
+  { src: 'https://images.pexels.com/photos/36076854/pexels-photo-36076854.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Police officers on horseback patrolling urban area in India' },
+  { src: 'https://images.pexels.com/photos/13062241/pexels-photo-13062241.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Police officer using radio while driving patrol car in India' },
+  { src: 'https://images.pexels.com/photos/13062239/pexels-photo-13062239.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Indian police officer with arms crossed by patrol car' },
+  { src: 'https://images.pexels.com/photos/9245871/pexels-photo-9245871.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Police officer shoulder insignia in India' },
+  { src: 'https://images.pexels.com/photos/4891762/pexels-photo-4891762.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Indian police officer in uniform with sunglasses outdoors' },
+  { src: 'https://images.pexels.com/photos/13062242/pexels-photo-13062242.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Police officer communicates via radio while driving patrol vehicle' },
+  { src: 'https://images.pexels.com/photos/13062234/pexels-photo-13062234.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Police officer standing beside patrol car with radio in India' },
+  { src: 'https://images.pexels.com/photos/13268079/pexels-photo-13268079.png?auto=compress&cs=tinysrgb&w=800', alt: 'Two police officers ride motorcycle in city traffic' },
+  { src: 'https://images.pexels.com/photos/12582990/pexels-photo-12582990.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Police and citizens at crowded outdoor scene in India' },
+  { src: 'https://images.pexels.com/photos/4267620/pexels-photo-4267620.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Police car patrols under city lights at night in Uttar Pradesh' },
 
-  // Parks & Green Spaces
-  { src: 'https://images.pexels.com/photos/37445061/pexels-photo-37445061.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Urban park greenery with modern skyscrapers in background' },
-  { src: 'https://images.pexels.com/photos/38522031/pexels-photo-38522031.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Urban park with tall skyscrapers, trees, and flower beds' },
-  { src: 'https://images.pexels.com/photos/33356825/pexels-photo-33356825.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Gardener tending to park, raking leaves among greenery' },
-  { src: 'https://images.pexels.com/photos/39387540/pexels-photo-39387540.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Peaceful gazebo surrounded by trees in urban park' },
-  { src: 'https://images.pexels.com/photos/9029162/pexels-photo-9029162.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Worker cutting grass in a park — lawn care' },
-  { src: 'https://images.pexels.com/photos/38849655/pexels-photo-38849655.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Urban garden with small waterfall and city skyline' },
-  { src: 'https://images.pexels.com/photos/35965400/pexels-photo-35965400.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Neglected urban alley with overgrown plants and old buildings' },
-  { src: 'https://images.pexels.com/photos/34237569/pexels-photo-34237569.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Park landscape with bare and evergreen trees in fall' },
-  { src: 'https://images.pexels.com/photos/8414362/pexels-photo-8414362.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Aerial shot of symmetrical pathways in a park' },
-  { src: 'https://images.pexels.com/photos/32062124/pexels-photo-32062124.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Aerial view of city park amidst cityscape' },
+  // Parks & Green Spaces — India
+  { src: 'https://images.pexels.com/photos/37886179/pexels-photo-37886179.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Garden pathway along waterfront with cityscape view in India' },
+  { src: 'https://images.pexels.com/photos/33610939/pexels-photo-33610939.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'People enjoying sunny day in park with green trees and pond' },
+  { src: 'https://images.pexels.com/photos/19921803/pexels-photo-19921803.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Peaceful park in New Delhi during sunset with silhouettes' },
+  { src: 'https://images.pexels.com/photos/30574621/pexels-photo-30574621.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Gardener tending plants by fountain in New Delhi park' },
+  { src: 'https://images.pexels.com/photos/14031239/pexels-photo-14031239.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Shish Gumbad Tomb in Lodi Gardens, New Delhi, India' },
+  { src: 'https://images.pexels.com/photos/39306755/pexels-photo-39306755.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Tree-lined road in Raipur, India with lush environment' },
+  { src: 'https://images.pexels.com/photos/37810853/pexels-photo-37810853.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Sundar Nursery with symmetrical garden layout in New Delhi' },
+  { src: 'https://images.pexels.com/photos/28003470/pexels-photo-28003470.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Victoria Memorial in Kolkata with people enjoying landscape' },
+  { src: 'https://images.pexels.com/photos/36569229/pexels-photo-36569229.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'People at Victoria Memorial in Kolkata with blooming trees' },
+  { src: 'https://images.pexels.com/photos/21617959/pexels-photo-21617959.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Victoria Memorial surrounded by lush gardens in Kolkata' },
+  { src: 'https://images.pexels.com/photos/12931519/pexels-photo-12931519.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Leafless tree in urban park in New Delhi, India' },
+  { src: 'https://images.pexels.com/photos/35488382/pexels-photo-35488382.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Modern park with outdoor chess set and lush greenery in India' },
+  { src: 'https://images.pexels.com/photos/19903911/pexels-photo-19903911.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Historic fort surrounded by trees and grass in India' },
 
-  // Traffic & Transport
-  { src: 'https://images.pexels.com/photos/32487422/pexels-photo-32487422.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Heavy traffic with cars, buses, and motorcycles on crowded road' },
-  { src: 'https://images.pexels.com/photos/32487431/pexels-photo-32487431.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Dense traffic with buses, cars, and motorbikes in urban street' },
-  { src: 'https://images.pexels.com/photos/16111423/pexels-photo-16111423.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Dense urban traffic highlighting buses in bustling city' },
-  { src: 'https://images.pexels.com/photos/18884661/pexels-photo-18884661.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Busy city street filled with cars and buses in traffic jam' },
-  { src: 'https://images.pexels.com/photos/37851661/pexels-photo-37851661.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Busy street in Bangkok with buses, cars, and motorbikes in traffic' },
-  { src: 'https://images.pexels.com/photos/30440852/pexels-photo-30440852.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Urban traffic jam viewed from inside a bus' },
-  { src: 'https://images.pexels.com/photos/36546448/pexels-photo-36546448.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'City street jammed with cars and bus during sunset' },
-  { src: 'https://images.pexels.com/photos/3616659/pexels-photo-3616659.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Heavy traffic congestion in city underpass' },
-  { src: 'https://images.pexels.com/photos/14838215/pexels-photo-14838215.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Bustling city street with cars and trucks in traffic jam' },
-  { src: 'https://images.pexels.com/photos/33070698/pexels-photo-33070698.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Night traffic jam under bridge with buses and taxis' },
+  // Traffic & Transport — India
+  { src: 'https://images.pexels.com/photos/27374365/pexels-photo-27374365.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Crowded city street with cars, motorcycles, and buses in India' },
+  { src: 'https://images.pexels.com/photos/10692618/pexels-photo-10692618.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Crowded street with cars, bikes, and auto rickshaws in India' },
+  { src: 'https://images.pexels.com/photos/5323957/pexels-photo-5323957.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Overhead view of traffic jam in Hyderabad, India' },
+  { src: 'https://images.pexels.com/photos/30169645/pexels-photo-30169645.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Heavy traffic on busy Bengaluru street' },
+  { src: 'https://images.pexels.com/photos/36997696/pexels-photo-36997696.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Chaotic traffic in Bengaluru with auto rickshaws and cars' },
+  { src: 'https://images.pexels.com/photos/2574077/pexels-photo-2574077.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Busy road with trucks and cars in heavy traffic in India' },
+  { src: 'https://images.pexels.com/photos/17340970/pexels-photo-17340970.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'City street in India with vehicles under smoggy skies' },
+  { src: 'https://images.pexels.com/photos/28865962/pexels-photo-28865962.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Congested city road bustling with vehicles in India' },
+  { src: 'https://images.pexels.com/photos/22408022/pexels-photo-22408022.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Aerial traffic congestion on Mumbai road' },
+  { src: 'https://images.pexels.com/photos/29848581/pexels-photo-29848581.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Traffic congestion in Bengaluru, India' },
+  { src: 'https://images.pexels.com/photos/20395359/pexels-photo-20395359.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Vehicles on expressway in New Delhi during golden hour' },
+
+  // Urban Poverty / Slum — India
+  { src: 'https://images.pexels.com/photos/30801668/pexels-photo-30801668.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Child in the slums of Lucknow, India' },
+  { src: 'https://images.pexels.com/photos/11091106/pexels-photo-11091106.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Two adults resting on street with belongings in India' },
+  { src: 'https://images.pexels.com/photos/28432040/pexels-photo-28432040.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Street view in Mumbai with bustling market and colorful homes' },
+  { src: 'https://images.pexels.com/photos/28672608/pexels-photo-28672608.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Street scene in Mumbai with auto rickshaws and buildings' },
+  { src: 'https://images.pexels.com/photos/28672606/pexels-photo-28672606.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Aerial view of slum area alongside railway tracks in Mumbai' },
+  { src: 'https://images.pexels.com/photos/6450839/pexels-photo-6450839.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Man in urban slum using smartphone amidst garbage in Delhi' },
+  { src: 'https://images.pexels.com/photos/33986172/pexels-photo-33986172.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Children in New Delhi alley carrying water bucket' },
+  { src: 'https://images.pexels.com/photos/10822937/pexels-photo-10822937.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Aerial view of rooftops with satellite dishes in urban India' },
+  { src: 'https://images.pexels.com/photos/10742870/pexels-photo-10742870.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Street vendor arranges jewelry on roadside stall in Indore' },
+
+  // Construction & Urban Development — India
+  { src: 'https://images.pexels.com/photos/33638024/pexels-photo-33638024.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Construction on misty road in Uttarakhand, India during monsoon' },
+  { src: 'https://images.pexels.com/photos/17935041/pexels-photo-17935041.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Yellow industrial trucks on misty road in Kedarnath, India' },
+  { src: 'https://images.pexels.com/photos/30401740/pexels-photo-30401740.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Yellow bulldozer amidst construction in Mumbai, India' },
 
   // Accessibility & Disability — Wheelchair / Mobility
   { src: 'https://images.pexels.com/photos/9808741/pexels-photo-9808741.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Metal handrail and concrete ramp for accessibility' },
@@ -136,24 +159,6 @@ const DEFAULT_IMAGES: GalleryImage[] = [
   { src: 'https://images.pexels.com/photos/7188566/pexels-photo-7188566.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Hand touching a Braille book — tactile reading' },
   { src: 'https://images.pexels.com/photos/7695388/pexels-photo-7695388.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Hands reading Braille text on paper — inclusivity concept' },
   { src: 'https://images.pexels.com/photos/7188743/pexels-photo-7188743.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Green braille slate and stylus on textured paper' },
-
-  // Urban Poverty / Slum / Housing
-  { src: 'https://images.pexels.com/photos/28672606/pexels-photo-28672606.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Densely populated slum area alongside railway tracks in Mumbai' },
-  { src: 'https://images.pexels.com/photos/4115447/pexels-photo-4115447.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Aerial shot of urban slums in Jakarta with pollution' },
-  { src: 'https://images.pexels.com/photos/10822937/pexels-photo-10822937.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Densely populated urban area with satellite dishes in India' },
-  { src: 'https://images.pexels.com/photos/33072163/pexels-photo-33072163.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Rusted rooftops in crowded urban area with makeshift houses' },
-  { src: 'https://images.pexels.com/photos/33072159/pexels-photo-33072159.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Densely packed urban slums with tin roofs' },
-  { src: 'https://images.pexels.com/photos/6450839/pexels-photo-6450839.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Man in urban slum using smartphone amidst garbage in Delhi' },
-  { src: 'https://images.pexels.com/photos/5368119/pexels-photo-5368119.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Polluted river beside rundown houses in slum' },
-  { src: 'https://images.pexels.com/photos/2783232/pexels-photo-2783232.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Makeshift homes near solar panels in Vadodara, India' },
-
-  // Construction & Urban Development
-  { src: 'https://images.pexels.com/photos/32537518/pexels-photo-32537518.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Construction zone with rubble, caution tape, and traffic cone' },
-  { src: 'https://images.pexels.com/photos/6018646/pexels-photo-6018646.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Freshly patched road section with work boots' },
-  { src: 'https://images.pexels.com/photos/16558841/pexels-photo-16558841.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Devastated industrial hangar with collapsed roof' },
-  { src: 'https://images.pexels.com/photos/4601284/pexels-photo-4601284.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Decaying industrial structure against clear blue sky' },
-  { src: 'https://images.pexels.com/photos/10664612/pexels-photo-10664612.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Dilapidated rusty steel structure under blue sky' },
-  { src: 'https://images.pexels.com/photos/16105750/pexels-photo-16105750.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'City scene showing extensive earthquake damage with debris' },
 ];
 
 const DEFAULTS = {
@@ -221,6 +226,15 @@ function buildItems(pool: (string | GalleryImage)[], seg: number): ItemCoord[] {
       usedImages.push(normalizedImages[i % normalizedImages.length]);
     }
   }
+
+  // Interleave: sort by a hash of src so categories are scattered around the globe
+  const interleave = [...usedImages];
+  interleave.sort((a, b) => {
+    const ha = a.src.split('/').pop() || a.src;
+    const hb = b.src.split('/').pop() || b.src;
+    return ha < hb ? -1 : ha > hb ? 1 : 0;
+  });
+  interleave.forEach((img, i) => { usedImages[i] = img; });
 
   for (let i = 1; i < usedImages.length; i++) {
     if (usedImages[i].src === usedImages[i - 1].src) {
