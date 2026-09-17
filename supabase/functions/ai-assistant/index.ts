@@ -4,6 +4,10 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
 };
 
+// Gemini API key must be passed as a query parameter (?key=...), NOT as an
+// Authorization: Bearer header. Using Bearer causes HTTP 401
+// "Request had invalid authentication credentials."
+
 const SYSTEM_PROMPT = `You are the helpful assistant for "Civic Portal," a website that lets people report accessibility issues in their community (visual, hearing, mobility, cognitive, and multiple disabilities). Answer visitor questions about how to use the site, how to report an issue, and general accessibility topics. Keep answers short, clear, and friendly. If you don't know something specific about this project, say so honestly rather than guessing.
 
 The site also helps residents report local civic issues (roads, water, waste, street lighting, safety, parks, traffic) and track them. Key pages: "/" (Home), "/file" (Report an Issue), "/track" (Track complaints), "/complaints" (Projects board), "/map" (Civic Map), "/map-view" (Map View), "/insights" (Get Involved), "/accessibility" (Accessibility & disability support), "/news" (Breaking News).`;
@@ -71,27 +75,31 @@ Deno.serve(async (req: Request) => {
       { role: "user", parts: [{ text: message }] },
     ];
 
-    const geminiRes = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          systemInstruction: {
-            parts: [
-              { text: `Today's date is ${today}.` },
-              { text: SYSTEM_PROMPT },
-            ],
-          },
-          contents,
-          generationConfig: {
-            temperature: 0.7,
-            topP: 0.7,
-            maxOutputTokens: 1024,
-          },
-        }),
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
+    const geminiReq = new Request(geminiUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-goog-api-key": apiKey,
       },
-    );
+      body: JSON.stringify({
+        systemInstruction: {
+          parts: [
+            { text: `Today's date is ${today}.` },
+            { text: SYSTEM_PROMPT },
+          ],
+        },
+        contents,
+        generationConfig: {
+          temperature: 0.7,
+          topP: 0.7,
+          maxOutputTokens: 1024,
+        },
+      }),
+    });
+    geminiReq.headers.delete("Authorization");
+
+    const geminiRes = await fetch(geminiReq);
 
     if (!geminiRes.ok) {
       const errBody = await geminiRes.text();
@@ -135,3 +143,4 @@ Deno.serve(async (req: Request) => {
     );
   }
 });
+// redeploy v2: strip Authorization header + use x-goog-api-key + key query param
