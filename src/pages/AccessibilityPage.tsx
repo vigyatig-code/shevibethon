@@ -1,8 +1,9 @@
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import { useNavigate, Link, useSearchParams } from 'react-router-dom'
-import { Accessibility, CheckCircle2, AlertCircle, Loader2, Lock, Camera, X, Heart, Eye, Ear, Brain, Footprints, Volume2, VolumeX, Mic, MicOff, ChevronRight, Info, FileText, ArrowLeft } from 'lucide-react'
+import { Accessibility, CheckCircle2, AlertCircle, Loader2, Lock, Camera, X, Heart, Eye, Ear, Brain, Footprints, Volume2, VolumeX, Mic, MicOff, ChevronRight, Info, FileText, ArrowLeft, Languages } from 'lucide-react'
 import { supabase, generateTrackingNumber, assessSeverity, uploadComplaintPhoto, type ComplaintInput } from '../lib/supabase'
 import { useVoiceFormFiller, type VoiceFormStep } from '../lib/hooks'
+import { type Language, LANG_CODES, LANG_LABELS, PROMPTS, pickVoice } from '../lib/voiceI18n'
 import TrueFocus from '../components/TrueFocus'
 import BubbleMenu from '../components/BubbleMenu'
 import BorderGlow from '../components/BorderGlow'
@@ -287,6 +288,11 @@ export default function AccessibilityPage() {
   const [audioStep, setAudioStep] = useState(0)
   const speechRef = useRef<SpeechSynthesisUtterance | null>(null)
 
+  // Language state (English default)
+  const [lang, setLang] = useState<Language>('en')
+  const langRef = useRef(lang)
+  langRef.current = lang
+
   // Disability support state
   const [selectedDisability, setSelectedDisability] = useState<DisabilityInfo | null>(null)
   const [highlighted, setHighlighted] = useState<string | null>(null)
@@ -304,6 +310,10 @@ export default function AccessibilityPage() {
     utterance.rate = 0.9
     utterance.pitch = 1
     utterance.volume = 1
+    utterance.lang = LANG_CODES[langRef.current]
+    const voices = window.speechSynthesis.getVoices()
+    const preferred = pickVoice(voices, langRef.current)
+    if (preferred) utterance.voice = preferred
     if (onEnd) utterance.onend = onEnd
     speechRef.current = utterance
     window.speechSynthesis.speak(utterance)
@@ -318,16 +328,13 @@ export default function AccessibilityPage() {
 
   // ─── Audio guide ─────────────────────────────────────────────────────────────
 
-  const AUDIO_STEPS = [
-    'Welcome to the Accessibility page. This audio guide will walk you through each step of submitting a report.',
-    'Step 1. Select your disability type. Tap one of the cards below. For example, Visual Impairment, Hearing Impairment, Mobility, Cognitive, or Multiple Disabilities. This is optional but helps us categorize your report.',
-    'Step 2. Choose a common issue. When you select a disability type, a bubble menu will appear with common issues. Tap a bubble to select the issue that best matches your situation. This will fill in the subject field for you.',
-    'Step 3. Enter your full name and email address in the contact section. These are required so we can follow up with you about your report.',
-    'Step 4. Review the subject field. If you selected an issue from the bubbles, it is already filled in. You can also type your own subject if you prefer.',
-    'Step 5. Write a detailed description of the accessibility barrier or issue you experienced. The more detail you provide, the better we can help.',
-    'Step 6. Optionally, add a photo. Tap the upload area to select an image from your device. This helps us see the problem directly.',
-    'Step 7. When you are ready, tap the Submit Report button at the bottom. Your report will be submitted with high priority and you will receive a tracking number to check its status later.',
-  ]
+  const AUDIO_STEPS = useMemo(() => {
+    const p = PROMPTS[lang]
+    return [
+      p.audioWelcome, p.audioStep1, p.audioStep2, p.audioStep3,
+      p.audioStep4, p.audioStep5, p.audioStep6, p.audioStep7,
+    ]
+  }, [lang])
 
   const playStep = useCallback((step: number) => {
     if (step < 0 || step >= AUDIO_STEPS.length) return
@@ -435,7 +442,8 @@ export default function AccessibilityPage() {
         setForm((prev) => ({ ...prev, [id]: value }))
       }
     },
-    undefined
+    undefined,
+    lang,
   )
 
   // ─── Disability voice-to-select (from DisabilitySupport) ─────────────────────
@@ -490,7 +498,7 @@ export default function AccessibilityPage() {
     stopSpeaking()
 
     const recognition = new SpeechRecognitionCtor()
-    recognition.lang = 'en-US'
+    recognition.lang = LANG_CODES[langRef.current]
     recognition.continuous = false
     recognition.interimResults = false
 
@@ -501,17 +509,19 @@ export default function AccessibilityPage() {
       if (match) {
         handleSelectDisability(match)
       } else {
-        const apology = `Sorry, I didn't catch that. I heard "${transcript}". Please try saying visual, hearing, mobility, cognitive, or multiple.`
+        const p = PROMPTS[langRef.current]
+        const apology = p.voiceApology.replace('{val}', transcript)
         setVoiceError(apology)
         speak(apology)
       }
     }
 
     recognition.onerror = (event) => {
+      const p = PROMPTS[langRef.current]
       if (event.error === 'no-speech') {
-        setVoiceError('No speech detected. Please try again.')
+        setVoiceError(p.voiceNoSpeech)
       } else if (event.error === 'not-allowed') {
-        setVoiceError('Microphone access denied. Please allow microphone access and try again.')
+        setVoiceError(p.voiceNotAllowed)
       } else {
         setVoiceError(`Voice error: ${event.error}`)
       }
@@ -526,7 +536,7 @@ export default function AccessibilityPage() {
     recognitionRef.current = recognition
     setListening(true)
     recognition.start()
-  }, [matchVoiceToDisability, stopSpeaking, handleSelectDisability, speak])
+  }, [matchVoiceToDisability, stopSpeaking, handleSelectDisability, speak, lang])
 
   // ─── Form helpers ────────────────────────────────────────────────────────────
 
@@ -779,6 +789,24 @@ export default function AccessibilityPage() {
           Choose your disability type below to see common issues, your rights, available resources, and to file a report. An audio description will play automatically when you select a disability.
         </p>
 
+        {/* Language toggle */}
+        <div className="accessibility-lang-toggle">
+          <Languages size={18} />
+          <div className="accessibility-lang-btns">
+            {(Object.keys(LANG_LABELS) as Language[]).map((l) => (
+              <button
+                key={l}
+                type="button"
+                className={`accessibility-lang-btn ${lang === l ? 'active' : ''}`}
+                onClick={() => setLang(l)}
+                aria-pressed={lang === l}
+              >
+                {LANG_LABELS[l]}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div className="disability-voice-section">
           <button
             type="button"
@@ -787,7 +815,7 @@ export default function AccessibilityPage() {
             aria-label={listening ? 'Stop voice input' : 'Start voice input'}
           >
             {listening ? <MicOff size={24} /> : <Mic size={24} />}
-            <span>{listening ? 'Listening... Tap to stop' : 'Say your disability type'}</span>
+            <span>{listening ? PROMPTS[lang].voiceMicListening : PROMPTS[lang].voiceMicLabel}</span>
           </button>
           {listening && (
             <div className="disability-voice-pulse">
@@ -801,7 +829,7 @@ export default function AccessibilityPage() {
             <p className="disability-voice-error">{voiceError}</p>
           )}
           <p className="disability-voice-hint">
-            Try saying: "visual impairment", "hearing", "mobility", "cognitive", or "multiple disabilities"
+            {PROMPTS[lang].voiceSayHint}
           </p>
         </div>
 

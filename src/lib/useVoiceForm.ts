@@ -1,4 +1,15 @@
 import { useRef, useState, useCallback, useEffect } from 'react'
+import {
+  type Language,
+  type PromptMap,
+  PROMPTS,
+  LANG_CODES,
+  FINAL_WORDS,
+  REDO_WORDS,
+  SPELL_WORDS,
+  containsAny,
+  pickVoice,
+} from './voiceI18n'
 
 const PHONETIC_MAP: Record<string, string> = {
   a: 'a', alpha: 'a', b: 'b', bee: 'b', c: 'c', see: 'c', sea: 'c',
@@ -12,15 +23,6 @@ const PHONETIC_MAP: Record<string, string> = {
   five: '5', six: '6', seven: '7', eight: '8', nine: '9',
   at: '@', 'at sign': '@', dot: '.', period: '.', dash: '-', hyphen: '-',
   underscore: '_', space: ' ',
-}
-
-const FINAL_WORDS = ['final', 'finalize', "that's final", 'lock it in', 'confirm final']
-const REDO_WORDS = ['redo', 'again', 'try again', 'start over', 'no']
-const SPELL_WORDS = ['spell', 'spell it', 'let me spell', 'spell it out']
-
-function containsAny(text: string, words: string[]): boolean {
-  const t = text.toLowerCase()
-  return words.some((w) => t.includes(w))
 }
 
 function parseSpokenEmail(transcript: string): string {
@@ -40,44 +42,40 @@ function isValidEmail(email: string): boolean {
 interface VoiceStep {
   field: 'name' | 'email' | 'subject' | 'description'
   label: string
-  prompt: string
   validate?: (value: string) => boolean
   transform?: (raw: string) => string
   speakAs?: (value: string) => string
   spellable?: boolean
 }
 
-const STEPS: VoiceStep[] = [
-  {
-    field: 'name',
-    label: 'name',
-    prompt: "What is your full name? Take your time — there's no rush at all.",
-    transform: (t) => t.replace(/\b\w/g, (c) => c.toUpperCase()),
-    spellable: true,
-  },
-  {
-    field: 'email',
-    label: 'email address',
-    prompt:
-      "What is your email address? You can say it naturally, like: john dot smith at gmail dot com. Take your time.",
-    transform: parseSpokenEmail,
-    validate: isValidEmail,
-    spellable: true,
-    speakAs: (v) => v.replace(/@/g, ' at ').replace(/\./g, ' dot '),
-  },
-  {
-    field: 'subject',
-    label: 'subject',
-    prompt: 'What is a brief title for your complaint? Just say it in a few words.',
-    spellable: true,
-  },
-  {
-    field: 'description',
-    label: 'description',
-    prompt:
-      'Please describe the issue in your own words. There is no rush — take as long as you need.',
-  },
-]
+function buildSteps(p: PromptMap): VoiceStep[] {
+  return [
+    {
+      field: 'name',
+      label: p.name.includes('नाम') ? 'नाम' : 'name',
+      validate: undefined,
+      transform: (t) => t.replace(/\b\w/g, (c) => c.toUpperCase()),
+      spellable: true,
+    },
+    {
+      field: 'email',
+      label: p.email.includes('ईमेल') ? 'ईमेल पता' : 'email address',
+      transform: parseSpokenEmail,
+      validate: isValidEmail,
+      spellable: true,
+      speakAs: (v) => v.replace(/@/g, ' at ').replace(/\./g, ' dot '),
+    },
+    {
+      field: 'subject',
+      label: p.subject.includes('शीर्षक') ? 'शीर्षक' : 'subject',
+      spellable: true,
+    },
+    {
+      field: 'description',
+      label: p.description.includes('वर्णन') ? 'विवरण' : 'description',
+    },
+  ]
+}
 
 function getSpeechRecognition(): any | null {
   return (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
@@ -92,6 +90,7 @@ export interface VoiceStatus {
 
 export function useVoiceForm(
   onFill: (field: VoiceStep['field'], value: string) => void,
+  lang: Language = 'en',
 ) {
   const [active, setActive] = useState(false)
   const [spokenField, setSpokenField] = useState<string | null>(null)
@@ -104,6 +103,8 @@ export function useVoiceForm(
   const isBusyRef = useRef(false)
   const voicesRef = useRef<SpeechSynthesisVoice[]>([])
   const keepAliveRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const langRef = useRef(lang)
+  langRef.current = lang
 
   useEffect(() => {
     const load = () => {
@@ -134,15 +135,14 @@ export function useVoiceForm(
     const utterance = new SpeechSynthesisUtterance(text)
     utterance.rate = 0.92
     utterance.pitch = 1
-    const preferred = voicesRef.current.find((v) => v.lang === 'en-US') || voicesRef.current[0]
+    utterance.lang = LANG_CODES[langRef.current]
+    const preferred = pickVoice(voicesRef.current, langRef.current)
     if (preferred) utterance.voice = preferred
 
     let done = false
     const safety = setTimeout(() => {
       if (done) return
       done = true
-      // 400ms buffer after speaking ends before the mic opens — prevents the
-      // mic from catching the tail end of the browser's own voice (echo).
       setTimeout(() => callback?.(), 400)
     }, text.length * 100 + 2500)
 
@@ -174,11 +174,14 @@ export function useVoiceForm(
 
   const updateStatus = useCallback((heard: string) => {
     const idx = stepRef.current
-    const step = idx < STEPS.length ? STEPS[idx] : STEPS[STEPS.length - 1]
+    const steps = buildSteps(PROMPTS[langRef.current])
+    const step = idx < steps.length ? steps[idx] : steps[steps.length - 1]
+    const p = PROMPTS[langRef.current]
+    const promptKey = step.field as keyof PromptMap
     setStatus({
       stepNum: idx + 1,
-      totalSteps: STEPS.length,
-      prompt: step.prompt,
+      totalSteps: steps.length,
+      prompt: p[promptKey],
       heard,
     })
   }, [])
@@ -206,7 +209,7 @@ export function useVoiceForm(
 
       let settled = false
       const rec = new SR()
-      rec.lang = 'en-US'
+      rec.lang = LANG_CODES[langRef.current]
       rec.continuous = false
       rec.interimResults = false
       rec.maxAlternatives = 1
@@ -216,7 +219,6 @@ export function useVoiceForm(
         settled = true
         isBusyRef.current = false
         const transcript = e.results[0][0].transcript.trim()
-        // Ignore obvious noise/garbage picked up by accident
         if (transcript.length < 2) {
           onNothingHeard('too-short')
           return
@@ -266,8 +268,9 @@ export function useVoiceForm(
 
   const commitAnswer = useCallback(
     (step: VoiceStep, value: string) => {
+      const p = PROMPTS[langRef.current]
       onFillRef.current(step.field, value)
-      speak("Great, that's saved.", () => {
+      speak(p.saved, () => {
         stepRef.current++
         askStepRef.current(stepRef.current)
       })
@@ -279,16 +282,18 @@ export function useVoiceForm(
   const spellLoop = useCallback(
     (step: VoiceStep, buffer: string[]) => {
       if (!runningRef.current) return
+      const p = PROMPTS[langRef.current]
+      const finalWords = FINAL_WORDS[langRef.current]
       listenOnce(
         (transcript) => {
           const word = transcript.toLowerCase().trim()
 
-          if (containsAny(word, FINAL_WORDS)) {
+          if (containsAny(word, finalWords)) {
             const value = buffer.join('')
             const finalValue = step.transform ? step.transform(value) : value
             if (step.validate && !step.validate(finalValue)) {
               speak(
-                `That's put together as ${finalValue}, but it doesn't look quite complete for your ${step.label}. Let's keep spelling — go ahead.`,
+                p.spellInvalid.replace('{val}', finalValue).replace('{label}', step.label),
                 () => spellLoopRef.current(step, buffer),
               )
               return
@@ -297,16 +302,16 @@ export function useVoiceForm(
             return
           }
 
-          if (word === 'delete' || word === 'backspace' || word.includes('remove')) {
+          if (word === 'delete' || word === 'backspace' || word.includes('remove') || word.includes('हटा')) {
             buffer.pop()
-            speak('Okay, removed. Go ahead with the next letter.', () =>
+            speak(p.spellRemoved, () =>
               spellLoopRef.current(step, buffer),
             )
             return
           }
 
-          if (word.includes('start over') || word.includes('clear')) {
-            speak('Okay, starting this field over. Go ahead and spell it from the beginning.', () =>
+          if (word.includes('start over') || word.includes('clear') || word.includes('शुरू')) {
+            speak(p.spellStartOver, () =>
               spellLoopRef.current(step, []),
             )
             return
@@ -317,14 +322,14 @@ export function useVoiceForm(
             buffer.push(char)
             speak(char, () => spellLoopRef.current(step, buffer))
           } else {
-            speak("Sorry, I didn't quite catch that letter. Could you say it once more?", () =>
+            speak(p.spellCatch, () =>
               spellLoopRef.current(step, buffer),
             )
           }
         },
         () => {
           if (!runningRef.current) return
-          speak('Still listening, whenever you are ready with the next letter.', () =>
+          speak(p.stillListening, () =>
             spellLoopRef.current(step, buffer),
           )
         },
@@ -336,10 +341,8 @@ export function useVoiceForm(
 
   const spellMode = useCallback(
     (step: VoiceStep) => {
-      speak(
-        `Okay, let's spell it out together, one letter at a time. Say "at" for the at sign, "dot" for a period, "delete" to remove the last letter, and "final" whenever you are done.`,
-        () => spellLoopRef.current(step, []),
-      )
+      const p = PROMPTS[langRef.current]
+      speak(p.spellIntro, () => spellLoopRef.current(step, []))
     },
     [speak],
   )
@@ -348,24 +351,25 @@ export function useVoiceForm(
   const awaitDecision = useCallback(
     (step: VoiceStep, candidateValue: string) => {
       if (!runningRef.current) return
+      const p = PROMPTS[langRef.current]
+      const finalWords = FINAL_WORDS[langRef.current]
+      const spellWords = SPELL_WORDS[langRef.current]
+      const redoWords = REDO_WORDS[langRef.current]
       listenOnce(
         (reply) => {
-          if (containsAny(reply, FINAL_WORDS)) {
+          if (containsAny(reply, finalWords)) {
             commitAnswerRef.current(step, candidateValue)
-          } else if (containsAny(reply, SPELL_WORDS)) {
+          } else if (containsAny(reply, spellWords)) {
             spellModeRef.current(step)
-          } else if (containsAny(reply, REDO_WORDS)) {
-            speak("No problem, let's try that again.", () => gentleListenRef.current(step))
+          } else if (containsAny(reply, redoWords)) {
+            speak(p.tryAgain, () => gentleListenRef.current(step))
           } else {
             handleAttemptRef.current(step, reply)
           }
         },
         () => {
           if (!runningRef.current) return
-          speak(
-            "Take your time — just say 'final' when you are happy with it, or try again.",
-            () => awaitDecisionRef.current(step, candidateValue),
-          )
+          speak(p.confirmTimeout, () => awaitDecisionRef.current(step, candidateValue))
         },
       )
     },
@@ -375,7 +379,9 @@ export function useVoiceForm(
 
   const handleAttempt = useCallback(
     (step: VoiceStep, rawTranscript: string) => {
-      if (containsAny(rawTranscript, SPELL_WORDS)) {
+      const p = PROMPTS[langRef.current]
+      const spellWords = SPELL_WORDS[langRef.current]
+      if (containsAny(rawTranscript, spellWords)) {
         spellModeRef.current(step)
         return
       }
@@ -384,13 +390,11 @@ export function useVoiceForm(
       const valid = !step.validate || step.validate(value)
 
       const spokenBack = step.speakAs ? step.speakAs(value) : value
-      const suggestion = step.spellable
-        ? `Say "final" if that is correct, "spell it" to spell it out letter by letter, or just say it again to redo it.`
-        : `Say "final" if that is correct, or just say it again to redo it.`
+      const suggestion = step.spellable ? p.confirmSpellable : p.confirmGeneric
 
       if (!valid && step.spellable) {
         speak(
-          `I heard "${rawTranscript}", but I am not fully sure that is right for your ${step.label}. Would you like to spell it out instead? Just say "spell it", or try saying it again.`,
+          p.heardInvalid.replace('{val}', rawTranscript).replace('{label}', step.label),
           () => awaitDecisionRef.current(step, value),
         )
         return
@@ -407,6 +411,7 @@ export function useVoiceForm(
   const gentleListen = useCallback(
     (step: VoiceStep) => {
       if (!runningRef.current) return
+      const p = PROMPTS[langRef.current]
       listenOnce(
         (transcript) => {
           updateStatus(transcript)
@@ -414,7 +419,7 @@ export function useVoiceForm(
         },
         () => {
           if (!runningRef.current) return
-          speak("Take your time. I am still listening whenever you are ready.", () =>
+          speak(p.stillListening, () =>
             gentleListenRef.current(step),
           )
         },
@@ -427,20 +432,21 @@ export function useVoiceForm(
   const askStep = useCallback(
     (idx: number) => {
       if (!runningRef.current) return
-      if (idx >= STEPS.length) {
+      const p = PROMPTS[langRef.current]
+      const steps = buildSteps(p)
+      if (idx >= steps.length) {
         runningRef.current = false
         setActive(false)
         setSpokenField(null)
         setStatus(null)
-        speak(
-          'All done — thank you for your patience. Please take a moment to review the form, then submit whenever you are ready.',
-        )
+        speak(p.done)
         return
       }
-      const step = STEPS[idx]
+      const step = steps[idx]
       setSpokenField(step.field)
       updateStatus('—')
-      speak(step.prompt, () => {
+      const promptKey = step.field as keyof PromptMap
+      speak(p[promptKey], () => {
         if (runningRef.current) gentleListenRef.current(step)
       })
     },
@@ -458,10 +464,8 @@ export function useVoiceForm(
     runningRef.current = true
     stepRef.current = 0
     setActive(true)
-    speak(
-      "Let's fill out the form together, one step at a time. There's no rush at all — take as many tries as you need on each question. After each answer, say \"final\" when you are happy with it.",
-      () => askStepRef.current(0),
-    )
+    const p = PROMPTS[langRef.current]
+    speak(p.intro, () => askStepRef.current(0))
   }, [speak])
 
   useEffect(() => {

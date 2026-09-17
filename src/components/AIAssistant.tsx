@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { Sparkles, X, Send, Bot } from 'lucide-react'
+import { Sparkles, X, Send, Bot, Languages } from 'lucide-react'
+import { type Language, LANG_LABELS } from '../lib/voiceI18n'
 
 interface ChatMessage {
   role: 'user' | 'assistant'
@@ -25,6 +26,7 @@ export default function AIAssistant() {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [showSuggestions, setShowSuggestions] = useState(true)
+  const [lang, setLang] = useState<Language>('en')
   const scrollRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -70,6 +72,7 @@ export default function AIAssistant() {
           body: JSON.stringify({
             message: trimmed,
             history,
+            lang,
           }),
         })
 
@@ -97,7 +100,7 @@ export default function AIAssistant() {
         setLoading(false)
       }
     },
-    [messages, loading],
+    [messages, loading, lang],
   )
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -134,13 +137,28 @@ export default function AIAssistant() {
               </span>
             </div>
           </div>
-          <button
-            className="ai-chat-close"
-            onClick={() => setOpen(false)}
-            aria-label="Close chat"
-          >
-            <X size={18} />
-          </button>
+          <div className="ai-chat-lang-wrap">
+            <div className="ai-chat-lang-btns">
+              {(Object.keys(LANG_LABELS) as Language[]).map((l) => (
+                <button
+                  key={l}
+                  type="button"
+                  className={`ai-chat-lang-btn ${lang === l ? 'active' : ''}`}
+                  onClick={() => setLang(l)}
+                  aria-pressed={lang === l}
+                >
+                  {LANG_LABELS[l]}
+                </button>
+              ))}
+            </div>
+            <button
+              className="ai-chat-close"
+              onClick={() => setOpen(false)}
+              aria-label="Close chat"
+            >
+              <X size={18} />
+            </button>
+          </div>
         </div>
 
         {/* Messages */}

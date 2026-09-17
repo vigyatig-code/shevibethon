@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { type Language, LANG_CODES, pickVoice } from './voiceI18n'
 
 // Intersection Observer hook for scroll-triggered reveals.
 // Returns a ref to attach and a boolean for whether it is visible.
@@ -123,7 +124,8 @@ const SpeechRecognitionAPI: any = (typeof window !== 'undefined'
 export function useVoiceFormFiller(
   steps: VoiceFormStep[],
   onFill: (id: string, value: string) => void,
-  onComplete?: (answers: Record<string, string>) => void
+  onComplete?: (answers: Record<string, string>) => void,
+  lang: Language = 'en',
 ): {
   state: VoiceFormFillerState
   start: () => void
@@ -143,6 +145,8 @@ export function useVoiceFormFiller(
   const onCompleteRef = useRef(onComplete)
   const stepsRef = useRef(steps)
   const activeRef = useRef(false)
+  const langRef = useRef(lang)
+  langRef.current = lang
 
   onFillRef.current = onFill
   onCompleteRef.current = onComplete
@@ -154,6 +158,10 @@ export function useVoiceFormFiller(
     window.speechSynthesis.cancel()
     const utterance = new SpeechSynthesisUtterance(text)
     utterance.rate = 0.95
+    utterance.lang = LANG_CODES[langRef.current]
+    const voices = window.speechSynthesis.getVoices()
+    const preferred = pickVoice(voices, langRef.current)
+    if (preferred) utterance.voice = preferred
     utterance.onend = () => {
       setSpeaking(false)
       if (onEnd) onEnd()
@@ -197,7 +205,7 @@ export function useVoiceFormFiller(
     if (!SpeechRecognitionAPI) return
 
     const recognition = new SpeechRecognitionAPI()
-    recognition.lang = 'en-US'
+    recognition.lang = LANG_CODES[langRef.current]
     recognition.continuous = false
     recognition.interimResults = false
     recognition.maxAlternatives = 1
