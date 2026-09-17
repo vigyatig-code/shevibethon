@@ -5,40 +5,79 @@ const corsHeaders = {
 };
 
 const INDIAN_DOMAINS =
-  "thehindu.com,timesofindia.indiatimes.com,ndtv.com,indianexpress.com,hindustantimes.com,deccanherald.com,news18.com,livemint.com,indiatoday.in,scroll.in,thequint.com";
+  "thehindu.com,timesofindia.indiatimes.com,ndtv.com,indianexpress.com,hindustantimes.com,deccanherald.com,news18.com,indiatoday.in,scroll.in,thequint.com";
 
-// Per-category queries — each well under NewsAPI's 500-char limit.
+// Each query requires "India" alongside category-specific civic terms
+// using NewsAPI's AND operator. Each stays well under the 500-char limit.
 const CATEGORY_QUERIES: Record<string, string> = {
-  roads: '(pothole OR "road damage" OR "road repair" OR streetlight OR traffic OR highway OR bridge OR flyover OR footpath OR "road accident" OR "traffic jam")',
-  water: '("water supply" OR "water leak" OR "water crisis" OR drainage OR sewer OR flood OR "water logging" OR pipeline OR "water board" OR desilting OR contamination)',
-  sanitation: '(garbage OR "waste management" OR sanitation OR "garbage collection" OR landfill OR dumping OR "sewage treatment" OR "street cleaning" OR swachh OR dustbin)',
-  electricity: '("power outage" OR "power cut" OR "street light" OR streetlight OR electricity OR transformer OR "load shedding" OR "power failure" OR discom OR grid)',
+  roads: 'India AND (pothole OR "road damage" OR "road repair" OR "traffic jam" OR flyover OR footpath OR "road accident" OR "pothole repair" OR "broken road" OR "crater road")',
+  water: 'India AND ("water supply" OR "water crisis" OR "water logging" OR "water shortage" OR "drinking water" OR "water pipeline" OR "sewage overflow" OR "drainage overflow" OR "water board" OR desilting)',
+  sanitation: 'India AND (garbage OR "waste management" OR "garbage collection" OR "sewage treatment" OR "street cleaning" OR swachh OR "waste collection" OR "dumping ground" OR "landfill fire" OR "waste segregation")',
+  electricity: 'India AND ("power cut" OR "power outage" OR "street light" OR streetlight OR "load shedding" OR "power failure" OR "electricity board" OR "transformer fire" OR "faulty meter" OR "power restoration")',
 };
 
-const FALLBACK_QUERY = "(civic OR municipal OR infrastructure OR city OR sanitation OR roads OR water OR electricity OR garbage OR traffic)";
+const FALLBACK_QUERY = 'India AND (municipal OR civic OR "city infrastructure" OR "urban governance" OR "public works" OR municipality OR corporation OR "smart city")';
+
+// Topics that indicate the article is NOT about civic infrastructure.
+const EXCLUDE_KEYWORDS = [
+  "stock", "share", "sensex", "nifty", "ipo", "mutual fund", "crypto", "bitcoin",
+  "oil pipeline", "gas pipeline", "crude oil", "lng", "petroleum", "refinery",
+  "real estate", "property market", "housing prices", "rental market", "commercial property",
+  "embassy", "diplomat", "geopolitics", "nato", "un security", "foreign policy",
+  "bollywood", "cricket", "ipl", "world cup", "tournament",
+  "box office", "film review", "ott release", "streaming",
+  "recipe", "restaurant review", "food festival",
+  "fashion week", "beauty", "wellness retreat",
+  "merger", "acquisition", "quarterly results", "revenue growth", "profit margin",
+  "tanker rate", "shipping rate", "freight rate", "charter rate",
+  "gold price", "silver price", "commodity market",
+];
 
 const CATEGORY_KEYWORDS: Record<string, string[]> = {
   roads: [
-    "pothole", "road", "traffic", "transport", "highway", "bridge",
-    "flyover", "footpath", "sidewalk", "speed breaker", "road repair", "road damage",
-    "road accident", "traffic jam", "ring road", "expressway",
+    "pothole", "road damage", "road repair", "traffic jam", "road accident",
+    "flyover", "footpath", "broken road", "crater road", "speed breaker",
+    "road cave", "pothole repair", "footbridge", "ring road", "expressway",
+    "carriageway", "bitumen", "road widening", "road construction",
+    "traffic signal", "road blockade", "road closure", "road maintenance",
+    "footpath repair", "footpath encroachment", "road encroachment",
+  "road", "traffic", "highway", "bridge", "potholes", "roads",
+    "transport",
   ],
   water: [
-    "water", "drain", "flood", "pipeline", "sewage", "monsoon",
-    "reservoir", "leak", "water supply", "water board", "water logging", "desilting",
-    "water crisis", "tanker", "contamination",
+    "water supply", "water crisis", "water logging", "water shortage",
+    "drinking water", "water pipeline", "sewage overflow", "drainage overflow",
+    "water board", "desilting", "water contamination", "water leak",
+    "water tanker", "tap water", "sewage water", "storm water drain",
+    "water treatment", "water scarcity", "water pressure",
+    "burst pipe", "pipeline burst", "water main",
+    "sewage", "sewer", "drainage", "flood", "monsoon", "reservoir",
   ],
   sanitation: [
-    "garbage", "waste", "sanitation", "cleanliness", "swachh",
-    "dumping", "landfill", "bin", "waste management", "dustbin",
-    "garbage collection", "sewage treatment", "street cleaning",
+    "garbage", "waste management", "garbage collection", "sewage treatment",
+    "street cleaning", "swachh", "waste collection", "dumping ground",
+    "landfill fire", "waste segregation", "dustbin", "sanitation",
+    "municipal waste", "solid waste", "biomedical waste",
+    "waste plant", "waste-to-energy", "garbage truck",
+    "waste", "cleanliness", "dumping", "landfill", "bin",
   ],
   electricity: [
-    "streetlight", "street light", "electricity", "power", "transformer",
-    "grid", "lamp", "led", "power outage", "power cut",
-    "load shedding", "discom",
+    "power cut", "power outage", "street light", "streetlight",
+    "load shedding", "power failure", "electricity board",
+    "transformer fire", "faulty meter", "power restoration",
+    "power supply", "electricity supply", "feeder tripping",
+    "transformer blast", "wire snapped", "pole fire",
+    "electricity", "power", "transformer", "grid", "discom",
   ],
 };
+
+function isRelevant(text: string): boolean {
+  const lower = text.toLowerCase();
+  for (const ex of EXCLUDE_KEYWORDS) {
+    if (lower.includes(ex)) return false;
+  }
+  return true;
+}
 
 function categorize(text: string): string {
   const lower = text.toLowerCase();
@@ -151,14 +190,20 @@ Deno.serve(async (req: Request) => {
       }
     }
 
+    // Filter out irrelevant articles (finance, entertainment, oil/gas, etc.)
+    const filtered = merged.filter((a) => {
+      const fullText = `${a.title || ""} ${a.description || ""} ${a.content || ""}`;
+      return isRelevant(fullText);
+    });
+
+    console.log("[news-api] Merged:", merged.length, "after relevance filter:", filtered.length);
+
     // Sort by publishedAt descending (most recent first).
-    merged.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
+    filtered.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
 
-    console.log("[news-api] Merged unique articles after parallel fetch:", merged.length);
-
-    // If all category queries returned nothing, try the broad fallback.
-    if (merged.length === 0) {
-      console.log("[news-api] Zero results from all category queries, trying fallback...");
+    // If all category queries returned nothing relevant, try the broad fallback.
+    if (filtered.length === 0) {
+      console.log("[news-api] Zero relevant results from category queries, trying fallback...");
       const fallbackFrom = formatDate(new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000));
       const fallbackResult = await fetchFromNewsAPI(apiKey, FALLBACK_QUERY, fallbackFrom, 30);
 
@@ -166,14 +211,17 @@ Deno.serve(async (req: Request) => {
         for (const a of fallbackResult.data.articles) {
           if (a.url && !seenUrls.has(a.url)) {
             seenUrls.add(a.url);
-            merged.push(a);
+            const fullText = `${a.title || ""} ${a.description || ""} ${a.content || ""}`;
+            if (isRelevant(fullText)) {
+              filtered.push(a);
+            }
           }
         }
-        merged.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
+        filtered.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
       }
 
-      // If still zero, try without domain restriction.
-      if (merged.length === 0) {
+      // If still zero, try without domain restriction (but still require India in query).
+      if (filtered.length === 0) {
         console.log("[news-api] Still zero results, trying without domain filter...");
         const broadUrl =
           `https://newsapi.org/v2/everything?q=${encodeURIComponent(FALLBACK_QUERY)}` +
@@ -196,10 +244,13 @@ Deno.serve(async (req: Request) => {
               for (const a of broadData.articles) {
                 if (a.url && !seenUrls.has(a.url)) {
                   seenUrls.add(a.url);
-                  merged.push(a);
+                  const fullText = `${a.title || ""} ${a.description || ""} ${a.content || ""}`;
+                  if (isRelevant(fullText)) {
+                    filtered.push(a);
+                  }
                 }
               }
-              merged.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
+              filtered.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
             }
           } catch { /* ignore parse error */ }
         }
@@ -208,7 +259,7 @@ Deno.serve(async (req: Request) => {
 
     // Check if any individual fetch returned an error (e.g. invalid key).
     const firstError = results.find((r) => !r.ok);
-    if (merged.length === 0 && firstError && !firstError.ok) {
+    if (filtered.length === 0 && firstError && !firstError.ok) {
       const errMsg = firstError.body?.message || `NewsAPI returned HTTP ${firstError.status}`;
       console.error("[news-api] Returning error to client:", errMsg);
       return new Response(
@@ -217,8 +268,8 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    if (merged.length === 0) {
-      console.log("[news-api] No articles found after all attempts");
+    if (filtered.length === 0) {
+      console.log("[news-api] No relevant articles found after all attempts");
       return new Response(
         JSON.stringify({ articles: [] }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
@@ -226,7 +277,7 @@ Deno.serve(async (req: Request) => {
     }
 
     // Cap at 30 articles total.
-    const capped = merged.slice(0, 30);
+    const capped = filtered.slice(0, 30);
 
     const articles = capped.map((a, i) => ({
       id: i + 1,
