@@ -75,7 +75,7 @@ Deno.serve(async (req: Request) => {
       { role: "user", parts: [{ text: message }] },
     ];
 
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
     const geminiReq = new Request(geminiUrl, {
       method: "POST",
       headers: {

@@ -58,13 +58,14 @@ export default function AIAssistant() {
       setShowSuggestions(false)
 
       try {
-        const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-assistant`
+        const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`
         const history = messages.map((m) => ({ role: m.role, content: m.content }))
         const res = await fetch(apiUrl, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+            apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
           },
           body: JSON.stringify({
             message: trimmed,
@@ -75,12 +76,15 @@ export default function AIAssistant() {
         if (!res.ok) throw new Error(`Request failed (${res.status})`)
 
         const data = await res.json()
-        const reply =
-          data?.reply ??
-          'I had trouble understanding that. Could you rephrase your question?'
+        const reply: string = data?.reply
+
+        if (!reply || typeof reply !== 'string') {
+          throw new Error('No reply field in response')
+        }
 
         setMessages((prev) => [...prev, { role: 'assistant', content: reply }])
-      } catch {
+      } catch (err) {
+        console.error('[AIAssistant] chat request failed:', err)
         setMessages((prev) => [
           ...prev,
           {
