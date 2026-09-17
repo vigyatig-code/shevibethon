@@ -8,24 +8,21 @@ const SYSTEM_PROMPT = `You are the helpful assistant for "Civic Portal," a websi
 
 The site also helps residents report local civic issues (roads, water, waste, street lighting, safety, parks, traffic) and track them. Key pages: "/" (Home), "/file" (Report an Issue), "/track" (Track complaints), "/complaints" (Projects board), "/map" (Civic Map), "/map-view" (Map View), "/insights" (Get Involved), "/accessibility" (Accessibility & disability support), "/news" (Breaking News).`;
 
+interface HistoryMessage {
+  role: "user" | "assistant";
+  content: string;
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 200, headers: corsHeaders });
   }
 
   try {
-    const { messages } = await req.json();
-
-    if (!Array.isArray(messages)) {
-      return new Response(
-        JSON.stringify({ error: "messages array is required" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
-    }
-
     const apiKey = Deno.env.get("GEMINI_API_KEY");
 
     if (!apiKey) {
+      console.error("[ai-assistant] GEMINI_API_KEY secret is not set");
       return new Response(
         JSON.stringify({
           reply:
@@ -35,21 +32,39 @@ Deno.serve(async (req: Request) => {
       );
     }
 
+    if (req.method !== "POST") {
+      return new Response(
+        JSON.stringify({ error: "Only POST requests are supported." }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    const body = await req.json();
+    const message: string = body.message;
+    const history: HistoryMessage[] = Array.isArray(body.history) ? body.history : [];
+
+    if (!message || typeof message !== "string") {
+      return new Response(
+        JSON.stringify({ error: "A 'message' field is required." }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
     const today = new Date().toISOString().split("T")[0];
 
-    // Gemini uses "contents" with role "user"/"model" and a separate "systemInstruction".
-    const geminiContents = messages.map((m: { role: string; content: string }) => ({
-      role: m.role === "assistant" ? "model" : "user",
-      parts: [{ text: m.content }],
-    }));
+    const contents = [
+      ...history.map((m) => ({
+        role: m.role === "assistant" ? "model" : "user",
+        parts: [{ text: m.content }],
+      })),
+      { role: "user", parts: [{ text: message }] },
+    ];
 
     const geminiRes = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
       {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           systemInstruction: {
             parts: [
@@ -57,9 +72,9 @@ Deno.serve(async (req: Request) => {
               { text: SYSTEM_PROMPT },
             ],
           },
-          contents: geminiContents,
+          contents,
           generationConfig: {
-            temperature: 1,
+            temperature: 0.7,
             topP: 0.7,
             maxOutputTokens: 1024,
           },
@@ -68,8 +83,8 @@ Deno.serve(async (req: Request) => {
     );
 
     if (!geminiRes.ok) {
-      const errText = await geminiRes.text();
-      console.error("Gemini API error:", errText);
+      const errBody = await geminiRes.text();
+      console.error("[ai-assistant] Gemini API error:", geminiRes.status, errBody.slice(0, 500));
       return new Response(
         JSON.stringify({
           reply: "I had trouble reaching the AI service just now. Please try again in a moment.",
@@ -78,24 +93,21 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const geminiData = await geminiRes.json();
-    const reply =
-      geminiData?.candidates?.[0]?.content?.parts
+    const data = await geminiRes.json();
+    const reply: string =
+      data?.candidates?.[0]?.content?.parts
         ?.map((part: { text?: string }) => part.text)
         ?.filter((t: string | undefined): t is string => typeof t === "string")
-        ?.join("\n") ??
-      "I couldn't generate a response for that. Could you rephrase your question?";
+        ?.join("\n") ?? "";
 
     return new Response(
-      JSON.stringify({ reply }),
+      JSON.stringify({ reply: reply || "I couldn't generate a response for that. Could you rephrase your question?" }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (err) {
-    console.error("Edge function error:", err);
+    console.error("[ai-assistant] Unhandled error:", err);
     return new Response(
-      JSON.stringify({
-        reply: "Something went wrong on my end. Please try again shortly.",
-      }),
+      JSON.stringify({ reply: "Something went wrong on my end. Please try again shortly." }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   }
