@@ -1,86 +1,25 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { ExternalLink, RefreshCw, AlertTriangle, Clock } from 'lucide-react'
+import { ExternalLink, RefreshCw, AlertTriangle, Clock, Newspaper } from 'lucide-react'
 import { useInView, useReducedMotion, useTilt } from '../lib/hooks'
-
-// BreakingNews: displays Indian civic news focused on urban problems
-// and their solutions — infrastructure, sanitation, public safety,
-// transport, environment, and civic governance. Uses demo data.
-// To connect a live API, replace the demo data in fetchNews with a
-// real fetch to an Indian news endpoint filtered to civic topics.
 
 interface NewsItem {
   id: number
   title: string
   description: string
   url: string
-  image: string
+  image: string | null
   source: string
   publishedAt: string
+  category: string
 }
-
-const demoNews: NewsItem[] = [
-  {
-    id: 1,
-    title: 'Bengaluru BBMP deploys AI-powered waste segregation across 198 wards',
-    description: 'Smart bins with sensor-based segregation and GPS-tracked collection vehicles aim to reduce landfill burden by 40% within six months.',
-    url: 'https://news.google.com',
-    image: 'https://images.unsplash.com/photo-1533233463289-cc5b7c05e35e?auto=format&fit=crop&w=600&q=80',
-    source: 'Deccan Herald',
-    publishedAt: new Date(Date.now() - 1800000).toISOString(),
-  },
-  {
-    id: 2,
-    title: 'Mumbai pothole tracking app resolves 12,000 complaints in monsoon season',
-    description: 'The civic body\'s digital grievance system lets citizens geotag potholes, with real-time status updates from allocation to road repair.',
-    url: 'https://news.google.com',
-    image: 'https://images.unsplash.com/photo-1558129483-30c3e3241b1c?auto=format&fit=crop&w=600&q=80',
-    source: 'Mumbai Mirror',
-    publishedAt: new Date(Date.now() - 5400000).toISOString(),
-  },
-  {
-    id: 3,
-    title: 'Delhi installs 200 new air quality monitors at traffic junctions',
-    description: 'The real-time AQI display boards will help commuters track pollution levels and enable targeted GRAP restrictions in hotspot zones.',
-    url: 'https://news.google.com',
-    image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=600&q=80',
-    source: 'Times of India',
-    publishedAt: new Date(Date.now() - 10800000).toISOString(),
-  },
-  {
-    id: 4,
-    title: 'Chennai water board launches leak detection dashboard for public tracking',
-    description: 'Residents can now report and track water pipeline leaks online, with the metro water department publishing daily repair status updates.',
-    url: 'https://news.google.com',
-    image: 'https://images.unsplash.com/photo-1559825481-ef54301af05b?auto=format&fit=crop&w=600&q=80',
-    source: 'The Hindu',
-    publishedAt: new Date(Date.now() - 18000000).toISOString(),
-  },
-  {
-    id: 5,
-    title: 'Hyderabad introduces smart streetlights with motion-sensor dimming',
-    description: '50,000 LED streetlights across the city now dim when streets are empty and brighten on movement, cutting energy costs by 35%.',
-    url: 'https://news.google.com',
-    image: 'https://images.unsplash.com/photo-1517479272896-3f0aa1b5f1e9?auto=format&fit=crop&w=600&q=80',
-    source: 'Indian Express',
-    publishedAt: new Date(Date.now() - 28800000).toISOString(),
-  },
-  {
-    id: 6,
-    title: 'Pune municipal corporation opens 24x7 public grievance redressal centers',
-    description: 'Twelve ward-level help desks now accept complaints round the clock for sanitation, streetlights, water, and drainage issues with SLA-based tracking.',
-    url: 'https://news.google.com',
-    image: 'https://images.unsplash.com/photo-1582719471384-89c3f0f5e4f2?auto=format&fit=crop&w=600&q=80',
-    source: 'NDTV',
-    publishedAt: new Date(Date.now() - 43200000).toISOString(),
-  },
-]
 
 const categories = [
   { key: 'all', label: 'All Civic News' },
-  { key: 'sanitation', label: 'Sanitation & Waste' },
-  { key: 'transport', label: 'Transport & Roads' },
-  { key: 'environment', label: 'Environment' },
-  { key: 'governance', label: 'Civic Governance' },
+  { key: 'roads', label: 'Roads' },
+  { key: 'water', label: 'Water' },
+  { key: 'sanitation', label: 'Sanitation' },
+  { key: 'electricity', label: 'Electricity' },
+  { key: 'general', label: 'General Civic News' },
 ]
 
 function formatTime(iso: string): string {
@@ -133,22 +72,39 @@ export default function BreakingNews() {
   const [news, setNews] = useState<NewsItem[]>([])
   const [loading, setLoading] = useState(true)
   const [category, setCategory] = useState('all')
+  const [error, setError] = useState<string | null>(null)
   const [ref, inView] = useInView<HTMLDivElement>({ threshold: 0.15 })
   const reduced = useReducedMotion()
 
-  const fetchNews = useCallback(() => {
+  const fetchNews = useCallback(async () => {
     setLoading(true)
-    // Demo data — replace with a live Indian civic news API call here.
-    // Example: fetch from gnews.io with query "civic OR municipal OR infrastructure"
-    setTimeout(() => {
-      setNews(demoNews)
+    setError(null)
+    try {
+      const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/news-api`
+      const res = await fetch(apiUrl, {
+        headers: {
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+        },
+      })
+      if (!res.ok) throw new Error(`Request failed (${res.status})`)
+      const data = await res.json()
+      if (data.error) throw new Error(data.error)
+      setNews(data.articles ?? [])
+    } catch {
+      setError('Unable to load news right now. Please try again in a moment.')
+      setNews([])
+    } finally {
       setLoading(false)
-    }, 500)
+    }
   }, [])
 
   useEffect(() => {
     fetchNews()
   }, [fetchNews])
+
+  const filteredNews =
+    category === 'all' ? news : news.filter((n) => n.category === category)
 
   return (
     <section className="civic-news" aria-label="Breaking News">
@@ -205,18 +161,23 @@ export default function BreakingNews() {
               </div>
             ))}
           </div>
+        ) : error ? (
+          <div className="civic-news-empty">
+            <Newspaper size={32} />
+            <p>{error}</p>
+          </div>
+        ) : filteredNews.length === 0 ? (
+          <div className="civic-news-empty">
+            <Newspaper size={32} />
+            <p>No breaking news today. Check back later for updates.</p>
+          </div>
         ) : (
           <div className={`civic-news-grid ${inView ? 'civic-reveal' : ''}`}>
-            {news.map((item, index) => (
+            {filteredNews.map((item, index) => (
               <NewsCard key={item.id} item={item} index={index} reduced={reduced} />
             ))}
           </div>
         )}
-
-        <div className="civic-news-footer">
-          <span className="civic-demo-tag">Demo data</span>
-          <span className="civic-news-note">Replace with a live Indian civic news API to show real-time updates.</span>
-        </div>
       </div>
     </section>
   )

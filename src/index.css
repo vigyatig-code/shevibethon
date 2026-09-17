@@ -3985,6 +3985,21 @@ body {
   justify-content: center;
 }
 
+.civic-news-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 48px 24px;
+  text-align: center;
+  color: var(--civic-muted);
+}
+
+.civic-news-empty p {
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
 .civic-news-note {
   font-size: 0.78rem;
   color: var(--civic-muted);

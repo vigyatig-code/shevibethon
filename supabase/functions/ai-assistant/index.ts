@@ -1,38 +1,12 @@
-import { createClient } from "npm:@supabase/supabase-js@2.116.0";
-
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
 };
 
-const SYSTEM_PROMPT = `You are "Site Assistant", a helpful AI guide for the Civic Portal — a community civic engagement platform for Indian cities.
+const SYSTEM_PROMPT = `You are the helpful assistant for "Civic Portal," a website that lets people report accessibility issues in their community (visual, hearing, mobility, cognitive, and multiple disabilities). Answer visitor questions about how to use the site, how to report an issue, and general accessibility topics. Keep answers short, clear, and friendly. If you don't know something specific about this project, say so honestly rather than guessing.
 
-The site helps residents:
-- Report local civic issues (roads, water, waste, street lighting, safety, parks, traffic, accessibility)
-- Track complaints via tracking numbers
-- Browse a "Projects" board of community-submitted issues
-- View two maps: a "Civic Map" (India state map with community pins) and a "Map View" (interactive Leaflet street map with nearby issues)
-- Read impact metrics, an impact timeline, and featured initiatives
-- Participate through a "Get Involved" page with insights and charts
-- Access an Accessibility page with disability support resources
-
-Key pages:
-- "/" — Home/About (hero, priorities, impact, initiatives, testimonials)
-- "/file" — Report an Issue (filing form with category, severity, photo, location)
-- "/track" — Track complaints by tracking number
-- "/complaints" — Projects board (browse all submitted issues)
-- "/map" — Civic Map (India state-level map)
-- "/map-view" — Map View (street-level interactive map)
-- "/insights" — Get Involved (data insights, charts, participation)
-- "/accessibility" — Accessibility & disability support
-
-Complaint categories: Roads & Infrastructure, Water & Drainage, Waste & Sanitation, Street Lighting, Public Safety, Parks & Green Spaces, Traffic & Transport, Accessibility & Disability, Other.
-
-Status flow: Pending → Under Review → Resolved (or Rejected).
-Severity levels: Critical, High, Medium, Low.
-
-Keep responses concise (2-4 sentences), friendly, and actionable. If asked about something outside this site's scope, gently steer back to civic engagement. If a user wants to file a complaint, direct them to the "Report an Issue" page. If they want to track one, point them to "Updates".`;
+The site also helps residents report local civic issues (roads, water, waste, street lighting, safety, parks, traffic) and track them. Key pages: "/" (Home), "/file" (Report an Issue), "/track" (Track complaints), "/complaints" (Projects board), "/map" (Civic Map), "/map-view" (Map View), "/insights" (Get Involved), "/accessibility" (Accessibility & disability support), "/news" (Breaking News).`;
 
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
@@ -61,40 +35,45 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const contents = [
-      {
-        role: "user",
-        parts: [{ text: SYSTEM_PROMPT }],
-      },
-      {
-        role: "model",
-        parts: [{ text: "Understood! I'm ready to help visitors navigate the Civic Portal." }],
-      },
-      ...messages.map((m: { role: string; content: string }) => ({
-        role: m.role === "assistant" ? "model" : "user",
-        parts: [{ text: m.content }],
-      })),
-    ];
+    const apiMessages = messages.map((m: { role: string; content: string }) => ({
+      role: m.role === "assistant" ? "assistant" : "user",
+      content: m.content,
+    }));
 
-    const geminiRes = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents,
-          generationConfig: {
-            temperature: 0.7,
-            maxOutputTokens: 512,
-            topP: 0.9,
+    const claudeRes = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": apiKey,
+        "anthropic-version": "2023-06-01",
+      },
+      body: JSON.stringify({
+        model: "claude-opus-5",
+        max_tokens: 1024,
+        system: [
+          {
+            type: "text",
+            text: `Today's date is ${new Date().toISOString().split("T")[0]}.`,
           },
-        }),
-      },
-    );
+          {
+            type: "text",
+            text: SYSTEM_PROMPT,
+          },
+        ],
+        messages: apiMessages,
+        temperature: 1,
+        top_p: 0.7,
+        top_k: 5,
+        thinking: {
+          type: "adaptive",
+        },
+        stream: false,
+      }),
+    });
 
-    if (!geminiRes.ok) {
-      const errText = await geminiRes.text();
-      console.error("Gemini API error:", errText);
+    if (!claudeRes.ok) {
+      const errText = await claudeRes.text();
+      console.error("Anthropic API error:", errText);
       return new Response(
         JSON.stringify({
           reply: "I had trouble reaching the AI service just now. Please try again in a moment.",
@@ -103,9 +82,12 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const geminiData = await geminiRes.json();
+    const claudeData = await claudeRes.json();
     const reply =
-      geminiData?.candidates?.[0]?.content?.parts?.[0]?.text ??
+      claudeData?.content
+        ?.filter((block: { type: string }) => block.type === "text")
+        ?.map((block: { text: string }) => block.text)
+        ?.join("\n") ??
       "I couldn't generate a response for that. Could you rephrase your question?";
 
     return new Response(

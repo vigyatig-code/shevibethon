@@ -1,2 +1,5 @@
 [functions.ai-assistant]
 verify_jwt = false
+
+[functions.news-api]
+verify_jwt = false
