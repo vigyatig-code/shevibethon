@@ -1,12 +1,14 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
-import { FileText, Search, List, BarChart3, Menu, X, Leaf, Accessibility, Map, MapPin, ChevronDown, Newspaper, Vote } from 'lucide-react'
+import { FileText, Search, List, BarChart3, Menu, X, Leaf, Accessibility, Map, MapPin, ChevronDown, Newspaper, Vote, UserCircle, LogOut } from 'lucide-react'
 import AnimatedBackground from './AnimatedBackground'
 import ScrollShapeParticles from './ScrollShapeParticles'
 import ScrollProgress from './ScrollProgress'
 import SiteFooter from './SiteFooter'
 import SplashCursor from './SplashCursor'
 import AIAssistant from './AIAssistant'
+import AuthModal from './AuthModal'
+import { supabase } from '../lib/supabase'
 
 const navItems = [
   { to: '/', label: 'About', icon: Leaf, end: true },
@@ -28,7 +30,11 @@ export default function Layout() {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [mapOpen, setMapOpen] = useState(false)
+  const [authOpen, setAuthOpen] = useState(false)
+  const [userEmail, setUserEmail] = useState<string | null>(null)
+  const [userMenuOpen, setUserMenuOpen] = useState(false)
   const mapRef = useRef<HTMLDivElement>(null)
+  const userMenuRef = useRef<HTMLDivElement>(null)
   const location = useLocation()
   const isHomePage = location.pathname === '/'
   const isMapArea = location.pathname === '/map' || location.pathname === '/map-view'
@@ -53,6 +59,33 @@ export default function Layout() {
     document.addEventListener('mousedown', onClick)
     return () => document.removeEventListener('mousedown', onClick)
   }, [mapOpen])
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session?.user?.email) setUserEmail(data.session.user.email)
+    })
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUserEmail(session?.user?.email ?? null)
+    })
+    return () => authListener.subscription.unsubscribe()
+  }, [])
+
+  useEffect(() => {
+    if (!userMenuOpen) return
+    const onClick = (e: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+        setUserMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', onClick)
+    return () => document.removeEventListener('mousedown', onClick)
+  }, [userMenuOpen])
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut()
+    setUserEmail(null)
+    setUserMenuOpen(false)
+  }
 
   return (
     <div className={`civic-app${isHomePage ? '' : ' inner-page'}`}>
@@ -113,6 +146,36 @@ export default function Layout() {
                 </div>
               </div>
 
+              {userEmail ? (
+                <div className="civic-nav-user" ref={userMenuRef}>
+                  <button
+                    type="button"
+                    className={`civic-nav-user-trigger ${userMenuOpen ? 'open' : ''}`}
+                    onClick={() => setUserMenuOpen((o) => !o)}
+                    aria-expanded={userMenuOpen}
+                    aria-haspopup="true"
+                  >
+                    <UserCircle size={18} />
+                    <span className="civic-nav-user-email">{userEmail}</span>
+                    <ChevronDown size={12} className={`civic-nav-user-chevron ${userMenuOpen ? 'rotated' : ''}`} />
+                  </button>
+                  <div className={`civic-nav-user-menu ${userMenuOpen ? 'open' : ''}`}>
+                    <div className="civic-nav-user-menu-header">
+                      Signed in as
+                      <strong>{userEmail}</strong>
+                    </div>
+                    <button className="civic-nav-user-menu-item" onClick={handleSignOut}>
+                      <LogOut size={15} />
+                      Sign Out
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button className="civic-nav-auth" onClick={() => setAuthOpen(true)}>
+                  Sign Up
+                </button>
+              )}
+
               <Link to="/file" className="civic-nav-cta" onClick={() => setMenuOpen(false)}>
                 Take Action
               </Link>
@@ -136,6 +199,7 @@ export default function Layout() {
 
       <SiteFooter />
       <AIAssistant />
+      <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} onAuthSuccess={() => {}} />
     </div>
   )
 }
