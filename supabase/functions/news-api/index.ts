@@ -7,8 +7,6 @@ const corsHeaders = {
 const INDIAN_DOMAINS =
   "thehindu.com,timesofindia.indiatimes.com,ndtv.com,indianexpress.com,hindustantimes.com,deccanherald.com,news18.com,indiatoday.in,scroll.in,thequint.com";
 
-// Each query requires "India" alongside category-specific civic terms
-// using NewsAPI's AND operator. Each stays well under the 500-char limit.
 const CATEGORY_QUERIES: Record<string, string> = {
   roads: 'India AND (pothole OR "road damage" OR "road repair" OR "traffic jam" OR flyover OR footpath OR "road accident" OR "pothole repair" OR "broken road" OR "crater road")',
   water: 'India AND ("water supply" OR "water crisis" OR "water logging" OR "water shortage" OR "drinking water" OR "water pipeline" OR "sewage overflow" OR "drainage overflow" OR "water board" OR desilting)',
@@ -18,7 +16,6 @@ const CATEGORY_QUERIES: Record<string, string> = {
 
 const FALLBACK_QUERY = 'India AND (municipal OR civic OR "city infrastructure" OR "urban governance" OR "public works" OR municipality OR corporation OR "smart city")';
 
-// Topics that indicate the article is NOT about civic infrastructure.
 const EXCLUDE_KEYWORDS = [
   "stock", "share", "sensex", "nifty", "ipo", "mutual fund", "crypto", "bitcoin",
   "oil pipeline", "gas pipeline", "crude oil", "lng", "petroleum", "refinery",
@@ -41,8 +38,7 @@ const CATEGORY_KEYWORDS: Record<string, string[]> = {
     "carriageway", "bitumen", "road widening", "road construction",
     "traffic signal", "road blockade", "road closure", "road maintenance",
     "footpath repair", "footpath encroachment", "road encroachment",
-  "road", "traffic", "highway", "bridge", "potholes", "roads",
-    "transport",
+    "road", "traffic", "highway", "bridge", "potholes", "roads", "transport",
   ],
   water: [
     "water supply", "water crisis", "water logging", "water shortage",
@@ -107,6 +103,9 @@ interface RawArticle {
   publishedAt: string;
 }
 
+// Progressive date windows: 7 days, then 14, then 30.
+const DATE_WINDOWS_DAYS = [7, 14, 30];
+
 async function fetchFromNewsAPI(apiKey: string, query: string, from: string, pageSize: number) {
   const newsUrl =
     `https://newsapi.org/v2/everything?q=${encodeURIComponent(query)}` +
@@ -146,6 +145,38 @@ async function fetchFromNewsAPI(apiKey: string, query: string, from: string, pag
   return { ok: true as const, data };
 }
 
+async function fetchCategoryWithProgressiveDates(
+  apiKey: string,
+  query: string,
+  now: Date,
+  pageSize: number,
+): Promise<{ articles: RawArticle[]; error?: { status: number; body: { message?: string } } }> {
+  for (const days of DATE_WINDOWS_DAYS) {
+    const from = formatDate(new Date(now.getTime() - days * 24 * 60 * 60 * 1000));
+    console.log(`[news-api] Trying ${days}-day window for category query`);
+    const result = await fetchFromNewsAPI(apiKey, query, from, pageSize);
+
+    if (!result.ok) {
+      // If it's an error like invalid key, return immediately
+      return { articles: [], error: { status: result.status, body: result.body } };
+    }
+
+    const articles = (result.data.articles || []).filter((a) => {
+      const fullText = `${a.title || ""} ${a.description || ""} ${a.content || ""}`;
+      return isRelevant(fullText);
+    });
+
+    console.log(`[news-api] ${days}-day window: ${result.data.articles?.length ?? 0} raw, ${articles.length} after filter`);
+
+    if (articles.length > 0) {
+      return { articles };
+    }
+    // If zero after filter, try the next wider window
+  }
+
+  return { articles: [] };
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 200, headers: corsHeaders });
@@ -165,101 +196,99 @@ Deno.serve(async (req: Request) => {
     console.log("[news-api] NEWS_API_KEY found, length:", apiKey.length);
 
     const now = new Date();
-    const fromDate = formatDate(new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000));
 
-    console.log("[news-api] Using from date:", fromDate, "(last 7 days)");
-
-    // Fire all 4 category queries in parallel, each well under the 500-char limit.
+    // Fire all 4 category queries in parallel, each with progressive date widening.
     const categoryEntries = Object.entries(CATEGORY_QUERIES);
     const results = await Promise.all(
-      categoryEntries.map(([, query]) => fetchFromNewsAPI(apiKey, query, fromDate, 15)),
+      categoryEntries.map(async ([cat, query]) => {
+        const result = await fetchCategoryWithProgressiveDates(apiKey, query, now, 15);
+        return { cat, ...result };
+      }),
     );
 
     // Merge articles from all successful category fetches, dedup by URL.
     const seenUrls = new Set<string>();
     const merged: RawArticle[] = [];
+    let firstError: { status: number; body: { message?: string } } | null = null;
 
     for (const r of results) {
-      if (r.ok && r.data.articles) {
-        for (const a of r.data.articles) {
-          if (a.url && !seenUrls.has(a.url)) {
-            seenUrls.add(a.url);
-            merged.push(a);
-          }
+      if (r.error && !firstError) firstError = r.error;
+      for (const a of r.articles) {
+        if (a.url && !seenUrls.has(a.url)) {
+          seenUrls.add(a.url);
+          merged.push(a);
         }
       }
     }
 
-    // Filter out irrelevant articles (finance, entertainment, oil/gas, etc.)
-    const filtered = merged.filter((a) => {
-      const fullText = `${a.title || ""} ${a.description || ""} ${a.content || ""}`;
-      return isRelevant(fullText);
-    });
-
-    console.log("[news-api] Merged:", merged.length, "after relevance filter:", filtered.length);
+    console.log("[news-api] Merged unique relevant articles after all category fetches:", merged.length);
 
     // Sort by publishedAt descending (most recent first).
-    filtered.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
+    merged.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
 
-    // If all category queries returned nothing relevant, try the broad fallback.
-    if (filtered.length === 0) {
-      console.log("[news-api] Zero relevant results from category queries, trying fallback...");
-      const fallbackFrom = formatDate(new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000));
-      const fallbackResult = await fetchFromNewsAPI(apiKey, FALLBACK_QUERY, fallbackFrom, 30);
+    // If all category queries returned nothing relevant, try the broad fallback with progressive dates.
+    if (merged.length === 0) {
+      console.log("[news-api] Zero results from all category queries, trying fallback...");
+      for (const days of DATE_WINDOWS_DAYS) {
+        const from = formatDate(new Date(now.getTime() - days * 24 * 60 * 60 * 1000));
+        console.log(`[news-api] Fallback: trying ${days}-day window`);
+        const fallbackResult = await fetchFromNewsAPI(apiKey, FALLBACK_QUERY, from, 30);
 
-      if (fallbackResult.ok && fallbackResult.data.articles) {
-        for (const a of fallbackResult.data.articles) {
-          if (a.url && !seenUrls.has(a.url)) {
-            seenUrls.add(a.url);
-            const fullText = `${a.title || ""} ${a.description || ""} ${a.content || ""}`;
-            if (isRelevant(fullText)) {
-              filtered.push(a);
+        if (fallbackResult.ok && fallbackResult.data.articles) {
+          for (const a of fallbackResult.data.articles) {
+            if (a.url && !seenUrls.has(a.url)) {
+              seenUrls.add(a.url);
+              const fullText = `${a.title || ""} ${a.description || ""} ${a.content || ""}`;
+              if (isRelevant(fullText)) {
+                merged.push(a);
+              }
             }
           }
+          if (merged.length > 0) break;
         }
-        filtered.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
       }
 
       // If still zero, try without domain restriction (but still require India in query).
-      if (filtered.length === 0) {
+      if (merged.length === 0) {
         console.log("[news-api] Still zero results, trying without domain filter...");
-        const broadUrl =
-          `https://newsapi.org/v2/everything?q=${encodeURIComponent(FALLBACK_QUERY)}` +
-          `&language=en` +
-          `&from=${fromDate}` +
-          `&sortBy=publishedAt` +
-          `&pageSize=30` +
-          `&apiKey=${apiKey}`;
+        for (const days of DATE_WINDOWS_DAYS) {
+          const from = formatDate(new Date(now.getTime() - days * 24 * 60 * 60 * 1000));
+          const broadUrl =
+            `https://newsapi.org/v2/everything?q=${encodeURIComponent(FALLBACK_QUERY)}` +
+            `&language=en` +
+            `&from=${from}` +
+            `&sortBy=publishedAt` +
+            `&pageSize=30` +
+            `&apiKey=${apiKey}`;
 
-        console.log("[news-api] Broad fetch (no domains):", broadUrl.replace(apiKey, "REDACTED"));
-        const broadRes = await fetch(broadUrl);
-        console.log("[news-api] Broad fetch status:", broadRes.status);
-        const broadBody = await broadRes.text();
-        console.log("[news-api] Broad fetch body:", broadBody.slice(0, 500));
+          console.log(`[news-api] Broad fetch (no domains, ${days}d):`, broadUrl.replace(apiKey, "REDACTED"));
+          const broadRes = await fetch(broadUrl);
+          console.log("[news-api] Broad fetch status:", broadRes.status);
+          const broadBody = await broadRes.text();
 
-        if (broadRes.ok) {
-          try {
-            const broadData = JSON.parse(broadBody) as { articles?: RawArticle[] };
-            if (broadData.articles) {
-              for (const a of broadData.articles) {
-                if (a.url && !seenUrls.has(a.url)) {
-                  seenUrls.add(a.url);
-                  const fullText = `${a.title || ""} ${a.description || ""} ${a.content || ""}`;
-                  if (isRelevant(fullText)) {
-                    filtered.push(a);
+          if (broadRes.ok) {
+            try {
+              const broadData = JSON.parse(broadBody) as { articles?: RawArticle[] };
+              if (broadData.articles) {
+                for (const a of broadData.articles) {
+                  if (a.url && !seenUrls.has(a.url)) {
+                    seenUrls.add(a.url);
+                    const fullText = `${a.title || ""} ${a.description || ""} ${a.content || ""}`;
+                    if (isRelevant(fullText)) {
+                      merged.push(a);
+                    }
                   }
                 }
+                if (merged.length > 0) break;
               }
-              filtered.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
-            }
-          } catch { /* ignore parse error */ }
+            } catch { /* ignore parse error */ }
+          }
         }
+        merged.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
       }
     }
 
-    // Check if any individual fetch returned an error (e.g. invalid key).
-    const firstError = results.find((r) => !r.ok);
-    if (filtered.length === 0 && firstError && !firstError.ok) {
+    if (merged.length === 0 && firstError) {
       const errMsg = firstError.body?.message || `NewsAPI returned HTTP ${firstError.status}`;
       console.error("[news-api] Returning error to client:", errMsg);
       return new Response(
@@ -268,7 +297,7 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    if (filtered.length === 0) {
+    if (merged.length === 0) {
       console.log("[news-api] No relevant articles found after all attempts");
       return new Response(
         JSON.stringify({ articles: [] }),
@@ -277,7 +306,7 @@ Deno.serve(async (req: Request) => {
     }
 
     // Cap at 30 articles total.
-    const capped = filtered.slice(0, 30);
+    const capped = merged.slice(0, 30);
 
     const articles = capped.map((a, i) => ({
       id: i + 1,

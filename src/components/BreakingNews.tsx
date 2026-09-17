@@ -170,7 +170,7 @@ export default function BreakingNews() {
         ) : filteredNews.length === 0 ? (
           <div className="civic-news-empty">
             <Newspaper size={32} />
-            <p>No breaking news today. Check back later for updates.</p>
+            <p>No civic news found in the last 30 days. Check back later for updates.</p>
           </div>
         ) : (
           <div className={`civic-news-grid ${inView ? 'civic-reveal' : ''}`}>
