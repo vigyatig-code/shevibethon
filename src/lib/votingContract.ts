@@ -1,4 +1,4 @@
-import { createPublicClient, createWalletClient, custom, http, parseAbi } from 'viem'
+import { createPublicClient, createWalletClient, custom, http } from 'viem'
 import { localhost } from 'viem/chains'
 
 export const CONTRACT_ADDRESS =
@@ -6,12 +6,46 @@ export const CONTRACT_ADDRESS =
 
 export const CHAIN = localhost
 
-export const VOTING_ABI = parseAbi([
-  'function getCandidates() view returns (tuple(uint256 id, string name, uint256 voteCount)[])',
-  'function vote(uint256 candidateId)',
-  'function hasVoted(address voter) view returns (bool)',
-  'event Voted(address indexed voter, uint256 indexed candidateId)',
-])
+export const VOTING_ABI = [
+  {
+    type: 'function',
+    name: 'getCandidates',
+    inputs: [],
+    outputs: [
+      {
+        type: 'tuple[]',
+        components: [
+          { name: 'id', type: 'uint256' },
+          { name: 'name', type: 'string' },
+          { name: 'voteCount', type: 'uint256' },
+        ],
+      },
+    ],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    name: 'vote',
+    inputs: [{ name: 'candidateId', type: 'uint256' }],
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
+    name: 'hasVoted',
+    inputs: [{ name: 'voter', type: 'address' }],
+    outputs: [{ name: '', type: 'bool' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'event',
+    name: 'Voted',
+    inputs: [
+      { name: 'voter', type: 'address', indexed: true },
+      { name: 'candidateId', type: 'uint256', indexed: true },
+    ],
+  },
+] as const
 
 export interface Candidate {
   id: bigint
