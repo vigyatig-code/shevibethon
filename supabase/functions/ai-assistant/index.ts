@@ -52,11 +52,22 @@ Deno.serve(async (req: Request) => {
 
     const today = new Date().toISOString().split("T")[0];
 
-    const contents = [
-      ...history.map((m) => ({
+    // Gemini requires the first content to be role "user". Strip any leading
+    // assistant/model messages (e.g. the welcome greeting) to avoid rejection.
+    const mappedHistory = history
+      .map((m) => ({
         role: m.role === "assistant" ? "model" : "user",
         parts: [{ text: m.content }],
-      })),
+      }))
+      .filter((m, i) => m.role === "user" || i > 0);
+
+    // Drop any remaining leading model messages.
+    while (mappedHistory.length > 0 && mappedHistory[0].role === "model") {
+      mappedHistory.shift();
+    }
+
+    const contents = [
+      ...mappedHistory,
       { role: "user", parts: [{ text: message }] },
     ];
 
@@ -85,20 +96,32 @@ Deno.serve(async (req: Request) => {
     if (!geminiRes.ok) {
       const errBody = await geminiRes.text();
       console.error("[ai-assistant] Gemini API error:", geminiRes.status, errBody.slice(0, 500));
+      let parsed: { error?: { message?: string } } = {};
+      try { parsed = JSON.parse(errBody); } catch { /* not JSON */ }
+      const errMsg = parsed.error?.message || `Gemini API returned HTTP ${geminiRes.status}`;
       return new Response(
         JSON.stringify({
-          reply: "I had trouble reaching the AI service just now. Please try again in a moment.",
+          reply: `I had trouble reaching the AI service just now (${errMsg}). Please try again in a moment.`,
         }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
     const data = await geminiRes.json();
+    const candidate = data?.candidates?.[0];
+    const finishReason = candidate?.finishReason;
     const reply: string =
-      data?.candidates?.[0]?.content?.parts
+      candidate?.content?.parts
         ?.map((part: { text?: string }) => part.text)
         ?.filter((t: string | undefined): t is string => typeof t === "string")
         ?.join("\n") ?? "";
+
+    if (!reply && finishReason === "SAFETY") {
+      return new Response(
+        JSON.stringify({ reply: "I couldn't generate a response for that topic. Could you rephrase your question?" }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
 
     return new Response(
       JSON.stringify({ reply: reply || "I couldn't generate a response for that. Could you rephrase your question?" }),
