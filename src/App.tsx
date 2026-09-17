@@ -10,6 +10,7 @@ import AccessibilityPage from './pages/AccessibilityPage'
 import MapPage from './pages/MapPage'
 import MapViewPage from './pages/MapViewPage'
 import NewsPage from './pages/NewsPage'
+import VotePage from './pages/VotePage'
 import OpeningSplash from './components/OpeningSplash'
 
 export default function App() {
@@ -33,6 +34,7 @@ export default function App() {
           <Route path="/map" element={<MapPage />} />
           <Route path="/map-view" element={<MapViewPage />} />
           <Route path="/news" element={<NewsPage />} />
+          <Route path="/vote" element={<VotePage />} />
         </Route>
       </Routes>
     </>

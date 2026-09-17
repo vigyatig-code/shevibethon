@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { Sparkles, X, Send, Bot, Languages } from 'lucide-react'
+import { Sparkles, X, Send, Bot } from 'lucide-react'
 import { type Language, LANG_LABELS } from '../lib/voiceI18n'
 
 interface ChatMessage {
