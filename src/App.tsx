@@ -9,6 +9,7 @@ import Insights from './pages/Insights'
 import AccessibilityPage from './pages/AccessibilityPage'
 import MapPage from './pages/MapPage'
 import MapViewPage from './pages/MapViewPage'
+import NewsPage from './pages/NewsPage'
 import OpeningSplash from './components/OpeningSplash'
 
 export default function App() {
@@ -31,6 +32,7 @@ export default function App() {
           <Route path="/disability-support" element={<Navigate to="/accessibility" replace />} />
           <Route path="/map" element={<MapPage />} />
           <Route path="/map-view" element={<MapViewPage />} />
+          <Route path="/news" element={<NewsPage />} />
         </Route>
       </Routes>
     </>
