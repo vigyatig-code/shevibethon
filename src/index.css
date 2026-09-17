@@ -37,6 +37,7 @@
   --font-body: 'EB Garamond', Georgia, 'Times New Roman', serif;
   --font-heading: 'EB Garamond', Georgia, 'Times New Roman', serif;
   --font-serif: 'EB Garamond', Georgia, 'Times New Roman', serif;
+  --font-handwritten: 'Caveat', cursive;
 
   /* Civic Earth palette — warm cream, brown, terracotta */
   --civic-bg: #f4ebdd;
@@ -1886,18 +1887,28 @@ body {
   transform: translateY(0);
 }
 
-.civic-india-map-svg-wrap {
-  background: linear-gradient(135deg, #1a1208 0%, #2a1d0f 50%, #1a1208 100%);
-  border: 1px solid rgba(212, 175, 55, 0.25);
+.civic-india-map-card {
   border-radius: var(--radius-lg);
+  padding: 6px;
+  background: linear-gradient(145deg, rgba(169, 101, 69, 0.12) 0%, rgba(196, 151, 106, 0.06) 100%);
+  border: 1px solid rgba(169, 101, 69, 0.18);
+  box-shadow: 0 8px 32px -6px rgba(111, 78, 55, 0.18), 0 3px 10px rgba(111, 78, 55, 0.1);
+  position: sticky;
+  top: 80px;
+}
+
+.civic-india-map-svg-wrap {
+  background: linear-gradient(135deg, #f9f4ec 0%, #f4ebdd 40%, #ede0cc 100%);
+  border-radius: calc(var(--radius-lg) - 4px);
   padding: 24px 20px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: inset 0 0 40px rgba(212, 175, 55, 0.04), 0 4px 24px rgba(0, 0, 0, 0.3);
+  box-shadow: inset 0 0 60px rgba(169, 101, 69, 0.06), 0 4px 20px -4px rgba(111, 78, 55, 0.12);
+  filter: drop-shadow(0 6px 20px rgba(111, 78, 55, 0.08));
   height: 540px;
-  position: sticky;
-  top: 80px;
+  position: relative;
+  overflow: hidden;
 }
 
 .civic-india-map-svg {
@@ -1908,27 +1919,43 @@ body {
 }
 
 .india-state-path {
-  opacity: 0.92;
-  transition: opacity 0.25s ease, stroke-width 0.25s ease, filter 0.25s ease;
+  opacity: 0.9;
+  transition: fill 0.3s ease, stroke-width 0.25s ease, filter 0.25s ease, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
   vector-effect: non-scaling-stroke;
   paint-order: stroke fill;
+  transform-origin: center;
+  transform-box: fill-box;
 }
 
 .india-state-path:hover {
   opacity: 1;
-  stroke-width: 1.6px;
+  stroke-width: 1.8px;
+  transform: scale(1.03);
+  filter: brightness(1.12) drop-shadow(0 0 6px rgba(169, 101, 69, 0.3));
 }
 
 .india-state-active {
   opacity: 1;
+  transform: scale(1.04);
+}
+
+@keyframes india-state-fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 0.9;
+    transform: scale(1);
+  }
 }
 
 .india-state-label {
-  fill: rgba(255, 255, 255, 0.92);
+  fill: rgba(74, 56, 40, 0.7);
   font-size: 28px;
   font-weight: 600;
   pointer-events: none;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+  text-shadow: 0 1px 2px rgba(249, 244, 236, 0.8);
   user-select: none;
 }
 
@@ -1939,19 +1966,20 @@ body {
 }
 
 .civic-india-map-legend {
-  background: linear-gradient(135deg, rgba(26, 18, 8, 0.6) 0%, rgba(42, 29, 15, 0.5) 100%);
+  background: var(--civic-glass);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(212, 175, 55, 0.2);
+  border: 1px solid var(--civic-border);
   border-radius: var(--radius-md);
   padding: 18px 20px;
+  box-shadow: 0 2px 12px rgba(111, 78, 55, 0.06);
 }
 
 .civic-india-legend-title {
   font-family: var(--font-serif);
   font-size: 0.95rem;
   font-weight: 600;
-  color: #f5d061;
+  color: var(--civic-text-bright);
   margin-bottom: 12px;
   letter-spacing: 0.02em;
 }
@@ -1969,44 +1997,51 @@ body {
 }
 
 .civic-india-legend-dot {
-  width: 12px;
-  height: 12px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
   flex-shrink: 0;
+  position: relative;
+  transition: box-shadow 0.3s ease;
+}
+
+.civic-india-legend-item:hover .civic-india-legend-dot {
+  box-shadow: 0 0 12px currentColor, 0 0 4px currentColor !important;
 }
 
 .civic-india-legend-label {
   font-size: 0.85rem;
-  color: #e8dcc0;
+  color: var(--civic-text);
   font-weight: 500;
 }
 
 .civic-india-legend-count {
   margin-left: auto;
   font-size: 0.78rem;
-  color: #a08c6a;
+  color: var(--civic-muted);
 }
 
 .civic-india-map-detail {
-  background: linear-gradient(135deg, rgba(26, 18, 8, 0.7) 0%, rgba(42, 29, 15, 0.6) 100%);
+  background: var(--civic-glass);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(212, 175, 55, 0.2);
+  border: 1px solid var(--civic-border);
   border-radius: var(--radius-md);
   padding: 22px;
   height: 380px;
   overflow-y: auto;
+  box-shadow: 0 2px 12px rgba(111, 78, 55, 0.06);
 }
 
 .civic-india-map-detail::-webkit-scrollbar {
   width: 6px;
 }
 .civic-india-map-detail::-webkit-scrollbar-track {
-  background: rgba(26, 18, 8, 0.4);
+  background: rgba(169, 101, 69, 0.06);
   border-radius: 3px;
 }
 .civic-india-map-detail::-webkit-scrollbar-thumb {
-  background: rgba(212, 175, 55, 0.3);
+  background: rgba(169, 101, 69, 0.25);
   border-radius: 3px;
 }
 
@@ -2028,13 +2063,13 @@ body {
   font-family: var(--font-serif);
   font-size: 1.25rem;
   font-weight: 600;
-  color: #f5d061;
+  color: var(--civic-text-bright);
   flex: 1;
 }
 
 .civic-india-detail-close {
-  background: rgba(212, 175, 55, 0.1);
-  border: 1px solid rgba(212, 175, 55, 0.25);
+  background: rgba(169, 101, 69, 0.1);
+  border: 1px solid rgba(169, 101, 69, 0.2);
   border-radius: 50%;
   width: 28px;
   height: 28px;
@@ -2042,13 +2077,13 @@ body {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: #d4af37;
+  color: var(--civic-muted);
   transition: background 0.2s ease;
   padding: 0;
 }
 
 .civic-india-detail-close:hover {
-  background: rgba(212, 175, 55, 0.2);
+  background: rgba(169, 101, 69, 0.2);
 }
 
 .civic-india-detail-sev-badge {
@@ -2078,28 +2113,28 @@ body {
 .civic-india-detail-stat-num {
   font-size: 1.35rem;
   font-weight: 700;
-  color: #f5d061;
+  color: var(--civic-text-bright);
   font-family: var(--font-serif);
 }
 
 .civic-india-detail-stat-label {
   font-size: 0.76rem;
-  color: #a08c6a;
+  color: var(--civic-muted);
 }
 
-.civic-trend-up { color: #e0584e; }
-.civic-trend-down { color: #7fb069; }
-.civic-trend-stable { font-size: 1.35rem; color: #a08c6a; }
+.civic-trend-up { color: #c0392b; }
+.civic-trend-down { color: #4a9e47; }
+.civic-trend-stable { font-size: 1.35rem; color: var(--civic-muted); }
 
 .civic-india-detail-hint {
   display: flex;
   align-items: center;
   gap: 6px;
   font-size: 0.85rem;
-  color: #c4a85e;
+  color: var(--civic-accent);
   padding: 10px 14px;
-  background: rgba(212, 175, 55, 0.06);
-  border: 1px solid rgba(212, 175, 55, 0.15);
+  background: rgba(169, 101, 69, 0.08);
+  border: 1px solid rgba(169, 101, 69, 0.18);
   border-radius: var(--radius-sm);
   margin-top: 4px;
 }
@@ -2115,13 +2150,13 @@ body {
 
 .civic-india-detail-empty p {
   font-size: 0.88rem;
-  color: #a08c6a;
+  color: var(--civic-muted);
   line-height: 1.6;
 }
 
 .civic-india-problem-list {
   margin-top: 8px;
-  border-top: 1px solid rgba(212, 175, 55, 0.15);
+  border-top: 1px solid var(--civic-border);
   padding-top: 14px;
 }
 
@@ -2131,7 +2166,7 @@ body {
   gap: 6px;
   font-size: 0.85rem;
   font-weight: 600;
-  color: #d4af37;
+  color: var(--civic-accent);
   margin-bottom: 10px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -2147,8 +2182,8 @@ body {
   display: flex;
   align-items: stretch;
   gap: 0;
-  background: rgba(42, 29, 15, 0.5);
-  border: 1px solid rgba(212, 175, 55, 0.12);
+  background: rgba(169, 101, 69, 0.05);
+  border: 1px solid var(--civic-border);
   border-radius: var(--radius-sm);
   overflow: hidden;
   opacity: 0;
@@ -2158,8 +2193,8 @@ body {
 }
 
 .civic-india-problem-item:hover {
-  border-color: rgba(212, 175, 55, 0.3);
-  background: rgba(42, 29, 15, 0.7);
+  border-color: rgba(169, 101, 69, 0.3);
+  background: rgba(169, 101, 69, 0.1);
 }
 
 @keyframes india-problem-fade-in {
@@ -2192,7 +2227,7 @@ body {
 .civic-india-problem-cat {
   font-size: 0.72rem;
   font-weight: 600;
-  color: #c4a85e;
+  color: var(--civic-accent);
   text-transform: uppercase;
   letter-spacing: 0.03em;
 }
@@ -2232,7 +2267,7 @@ body {
 
 .civic-india-problem-title {
   font-size: 0.88rem;
-  color: #e8dcc0;
+  color: var(--civic-text);
   line-height: 1.45;
   margin: 0;
 }
@@ -2249,16 +2284,18 @@ body {
   align-items: center;
   gap: 4px;
   font-size: 0.74rem;
-  color: #a08c6a;
+  color: var(--civic-muted);
 }
 
 .civic-india-problem-time {
   font-size: 0.72rem;
-  color: #806a4e;
+  color: var(--civic-muted);
+  opacity: 0.7;
 }
 
 .civic-india-problem-chevron {
-  color: #806a4e;
+  color: var(--civic-muted);
+  opacity: 0.5;
   flex-shrink: 0;
   align-self: center;
   margin-right: 10px;
@@ -2269,9 +2306,10 @@ body {
   align-items: center;
   gap: 24px;
   padding: 14px 18px;
-  background: linear-gradient(135deg, rgba(26, 18, 8, 0.6) 0%, rgba(42, 29, 15, 0.5) 100%);
-  border: 1px solid rgba(212, 175, 55, 0.2);
+  background: var(--civic-glass);
+  border: 1px solid var(--civic-border);
   border-radius: var(--radius-md);
+  box-shadow: 0 2px 12px rgba(111, 78, 55, 0.06);
 }
 
 .civic-india-summary-item {
@@ -2283,13 +2321,13 @@ body {
 .civic-india-summary-num {
   font-size: 1.15rem;
   font-weight: 700;
-  color: #f5d061;
+  color: var(--civic-text-bright);
   font-family: var(--font-serif);
 }
 
 .civic-india-summary-label {
   font-size: 0.74rem;
-  color: #a08c6a;
+  color: var(--civic-muted);
 }
 
 @media (max-width: 768px) {
@@ -2304,6 +2342,9 @@ body {
   }
   .civic-india-detail-stats {
     gap: 18px;
+  }
+  .civic-india-map-card {
+    position: static;
   }
 }
 
@@ -7150,4 +7191,342 @@ body {
   color: var(--civic-muted);
   line-height: 1.6;
   max-width: 380px;
+}
+
+/* ==================== STICKY NOTE MODAL ==================== */
+
+.sticky-note-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(74, 56, 40, 0.35);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: sticky-backdrop-in 0.3s ease forwards;
+}
+
+.sticky-note-backdrop.closing {
+  animation: sticky-backdrop-out 0.3s ease forwards;
+}
+
+@keyframes sticky-backdrop-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes sticky-backdrop-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+.sticky-note {
+  position: relative;
+  width: 360px;
+  min-height: 320px;
+  padding: 36px 24px 24px;
+  background:
+    radial-gradient(circle at 20% 15%, rgba(196, 151, 106, 0.08) 0%, transparent 8%),
+    radial-gradient(circle at 75% 40%, rgba(196, 151, 106, 0.06) 0%, transparent 6%),
+    radial-gradient(circle at 50% 70%, rgba(169, 101, 69, 0.05) 0%, transparent 10%),
+    linear-gradient(160deg, #fff9e6 0%, #fef3cd 40%, #fdeec4 100%);
+  border-radius: 2px 2px 4px 4px;
+  box-shadow:
+    0 12px 28px -8px rgba(111, 78, 55, 0.35),
+    0 6px 14px -4px rgba(111, 78, 55, 0.22),
+    0 2px 6px rgba(111, 78, 55, 0.15);
+  transform: rotate(var(--note-tilt, -3deg));
+  transform-origin: center center;
+}
+
+/* Paper grain texture */
+.sticky-note::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    radial-gradient(circle at 15% 25%, rgba(169, 101, 69, 0.03) 0%, transparent 2%),
+    radial-gradient(circle at 85% 15%, rgba(169, 101, 69, 0.03) 0%, transparent 2%),
+    radial-gradient(circle at 40% 80%, rgba(169, 101, 69, 0.02) 0%, transparent 3%),
+    radial-gradient(circle at 70% 60%, rgba(169, 101, 69, 0.02) 0%, transparent 2%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Open animation: springy pop-in with overshoot wobble */
+.sticky-note-open {
+  animation: sticky-pop-in 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes sticky-pop-in {
+  0% {
+    transform: scale(0.7) rotate(var(--note-tilt, -3deg)) translateY(20px);
+    opacity: 0;
+  }
+  40% {
+    transform: scale(1.06) rotate(calc(var(--note-tilt, -3deg) + 3deg)) translateY(-4px);
+    opacity: 1;
+  }
+  60% {
+    transform: scale(0.97) rotate(calc(var(--note-tilt, -3deg) - 2deg)) translateY(2px);
+  }
+  80% {
+    transform: scale(1.02) rotate(calc(var(--note-tilt, -3deg) + 1deg)) translateY(0);
+  }
+  100% {
+    transform: scale(1) rotate(var(--note-tilt, -3deg)) translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Close animation: shrink, rotate, drop */
+.sticky-note-closing {
+  animation: sticky-peel-off 0.3s ease-in forwards;
+}
+
+@keyframes sticky-peel-off {
+  from {
+    transform: scale(1) rotate(var(--note-tilt, -3deg));
+    opacity: 1;
+  }
+  to {
+    transform: scale(0.5) rotate(calc(var(--note-tilt, -3deg) + 20deg)) translateY(40px);
+    opacity: 0;
+  }
+}
+
+/* Tape strip */
+.sticky-note-tape {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%) rotate(var(--tape-tilt, 3deg));
+  width: 90px;
+  height: 28px;
+  background: rgba(231, 214, 190, 0.65);
+  border: 1px solid rgba(169, 101, 69, 0.08);
+  box-shadow: 0 1px 3px rgba(111, 78, 55, 0.12);
+  z-index: 3;
+}
+
+/* Close button */
+.sticky-note-close {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: rgba(169, 101, 69, 0.08);
+  color: var(--civic-muted);
+  font-size: 0.75rem;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+  z-index: 5;
+}
+
+.sticky-note-close:hover {
+  background: rgba(169, 101, 69, 0.18);
+  color: var(--civic-text);
+}
+
+/* Heading */
+.sticky-note-heading {
+  font-family: var(--font-handwritten);
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--civic-text-bright);
+  margin-bottom: 12px;
+  position: relative;
+  z-index: 2;
+}
+
+/* Lined textarea */
+.sticky-note-textarea {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  border: none;
+  outline: none;
+  resize: none;
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0px,
+      transparent 27px,
+      rgba(169, 101, 69, 0.18) 27px,
+      rgba(169, 101, 69, 0.18) 28px
+    );
+  font-family: var(--font-handwritten);
+  font-size: 1.2rem;
+  line-height: 28px;
+  color: var(--civic-text);
+  padding: 0 4px;
+  min-height: 140px;
+}
+
+.sticky-note-textarea::placeholder {
+  color: rgba(122, 102, 80, 0.45);
+  font-family: var(--font-handwritten);
+  font-size: 1.2rem;
+}
+
+/* Pencil decoration */
+.sticky-note-pencil {
+  position: absolute;
+  bottom: 10px;
+  left: 14px;
+  font-size: 1.1rem;
+  opacity: 0.7;
+  z-index: 2;
+}
+
+/* Curled corner */
+.sticky-note-curl {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 28px;
+  height: 28px;
+  background:
+    linear-gradient(
+      135deg,
+      transparent 50%,
+      rgba(169, 101, 69, 0.12) 50%,
+      rgba(111, 78, 55, 0.18) 100%
+    );
+  border-radius: 0 0 4px 0;
+  box-shadow: -2px -2px 6px rgba(111, 78, 55, 0.08);
+  z-index: 3;
+}
+
+/* Pin submit button */
+.sticky-note-pin {
+  position: absolute;
+  bottom: 14px;
+  right: 16px;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: var(--civic-accent);
+  font-size: 1.2rem;
+  cursor: pointer;
+  box-shadow: 0 3px 8px rgba(169, 101, 69, 0.3);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  z-index: 4;
+}
+
+.sticky-note-pin:hover {
+  box-shadow: 0 4px 12px rgba(169, 101, 69, 0.45);
+}
+
+.sticky-note-pin.squish {
+  transform: scale(0.8);
+}
+
+.sticky-note-pin.submitted {
+  pointer-events: none;
+}
+
+/* Sparkle burst */
+.sticky-note-sparkle-burst {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.sticky-note-sparkle {
+  position: absolute;
+  font-size: 0.9rem;
+  animation: sparkle-fly 0.7s ease-out forwards;
+}
+
+@keyframes sparkle-fly {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.2);
+  }
+  100% {
+    transform: translate(calc(-50% + var(--sx)), calc(-50% + var(--sy))) scale(0.3) rotate(var(--sr));
+    opacity: 0;
+  }
+}
+
+/* Loading state for India map */
+.civic-india-map-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  min-height: 300px;
+  color: var(--civic-muted);
+  font-family: var(--font-serif);
+  font-size: 0.95rem;
+}
+
+/* India map tooltip */
+.india-map-tooltip {
+  position: absolute;
+  pointer-events: none;
+  z-index: 10;
+  background: rgba(74, 56, 40, 0.95);
+  color: #f9f4ec;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-family: var(--font-serif);
+  white-space: nowrap;
+  box-shadow: 0 4px 14px rgba(111, 78, 55, 0.25);
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  animation: india-tooltip-in 0.15s ease forwards;
+}
+
+@keyframes india-tooltip-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.india-map-tooltip-name {
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.india-map-tooltip-count {
+  font-size: 0.75rem;
+  opacity: 0.8;
+}
+
+.india-map-tooltip-nodata {
+  opacity: 0.6;
+}
+
+@media (max-width: 480px) {
+  .sticky-note {
+    width: 300px;
+    min-height: 280px;
+  }
+  .sticky-note-heading {
+    font-size: 1.5rem;
+  }
 }

@@ -3,8 +3,9 @@ import { ArrowRight, ChevronDown } from 'lucide-react'
 import { heroVariations, activeHeroVariation, trustIndicators } from '../lib/civicContent'
 import MaskedHeading from './MaskedHeading'
 import WavyBackground from './WavyBackground'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { gsap } from 'gsap'
+import StickyNoteModal from './StickyNoteModal'
 
 const SUBTITLE_TEXT = 'NAZAR HATI TO DURGHATNA GHATI'
 
@@ -65,6 +66,8 @@ function AnimatedSubtitle() {
 // description, primary/secondary CTAs, trust indicators, and a scroll cue.
 export default function HeroSection() {
   const copy = heroVariations[activeHeroVariation]
+  const [ideaOpen, setIdeaOpen] = useState(false)
+  const ideaBtnRef = useRef<HTMLButtonElement>(null)
 
   return (
     <section className="civic-hero" aria-label="Introduction">
@@ -114,10 +117,14 @@ export default function HeroSection() {
           <AnimatedSubtitle />
           <p className="civic-hero-description">{copy.description}</p>
           <div className="civic-hero-actions">
-            <Link to="/file" className="civic-btn civic-btn-primary">
+            <button
+              ref={ideaBtnRef}
+              className="civic-btn civic-btn-primary"
+              onClick={() => setIdeaOpen(true)}
+            >
               {copy.primaryCta}
               <ArrowRight size={18} />
-            </Link>
+            </button>
             <Link to="/complaints" className="civic-btn civic-btn-secondary">
               {copy.secondaryCta}
             </Link>
@@ -135,6 +142,11 @@ export default function HeroSection() {
           <ChevronDown size={20} className="civic-scroll-cue-icon" />
         </div>
       </WavyBackground>
+      <StickyNoteModal
+        open={ideaOpen}
+        onClose={() => setIdeaOpen(false)}
+        triggerRef={ideaBtnRef}
+      />
     </section>
   )
 }

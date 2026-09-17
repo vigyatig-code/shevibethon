@@ -1,22 +1,7 @@
-import { useState, useMemo } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { ComposableMap, Geographies, Geography } from 'react-simple-maps'
 import { AlertCircle, TrendingUp, TrendingDown, X, MapPin, ChevronRight } from 'lucide-react'
 import { useInView } from '../lib/hooks'
-import { indiaStatePaths } from '../lib/indiaStatePaths'
-
-function computeCentroid(d: string): { cx: number; cy: number } {
-  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
-  svg.style.position = 'absolute'
-  svg.style.width = '0'
-  svg.style.height = '0'
-  svg.style.visibility = 'hidden'
-  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path')
-  path.setAttribute('d', d)
-  svg.appendChild(path)
-  document.body.appendChild(svg)
-  const bbox = path.getBBox()
-  document.body.removeChild(svg)
-  return { cx: bbox.x + bbox.width / 2, cy: bbox.y + bbox.height / 2 }
-}
 
 export interface StateProblem {
   title: string
@@ -43,20 +28,35 @@ function getCaseLevel(count: number): 'high' | 'medium' | 'low' {
 
 const LEVEL_FILL: Record<string, string> = {
   high: '#c0392b',
-  medium: '#f1c40f',
-  low: '#27ae60',
+  medium: '#e8a838',
+  low: '#5a9e57',
 }
 
+// Fallback fill for states with no data — warm muted tone that still looks intentional
+const NO_DATA_FILL = '#d4c4a8'
+
 const LEVEL_GLOW: Record<string, string> = {
-  high: 'rgba(192, 57, 43, 0.6)',
-  medium: 'rgba(241, 196, 15, 0.5)',
-  low: 'rgba(39, 174, 96, 0.4)',
+  high: 'rgba(192, 57, 43, 0.5)',
+  medium: 'rgba(232, 168, 56, 0.45)',
+  low: 'rgba(90, 158, 87, 0.4)',
+}
+
+const LEVEL_FILL_BRIGHT: Record<string, string> = {
+  high: '#d9493b',
+  medium: '#f0bb4e',
+  low: '#6dbb6a',
 }
 
 const LEVEL_LABEL: Record<string, string> = {
   high: 'Most cases',
   medium: 'Moderate',
   low: 'Fewest cases',
+}
+
+// Maps TopoJSON state names (which may use older naming) to our stateData names
+const NAME_REMAP: Record<string, string> = {
+  'Orissa': 'Odisha',
+  'Uttaranchal': 'Uttarakhand',
 }
 
 const stateData: StateSeverity[] = [
@@ -243,17 +243,36 @@ function timeAgo(days: number): string {
   return `${Math.floor(days / 30)} month${days >= 60 ? 's' : ''} ago`
 }
 
+const TOPOJSON_URL = '/india-states.topojson'
+
+interface TooltipInfo {
+  name: string
+  count: number | null
+  x: number
+  y: number
+}
+
 export default function IndiaMap() {
   const [hoveredState, setHoveredState] = useState<string | null>(null)
   const [selectedState, setSelectedState] = useState<string | null>(null)
   const [ref, inView] = useInView<HTMLDivElement>({ threshold: 0.2 })
+  const [topoData, setTopoData] = useState<any>(null)
+  const [tooltip, setTooltip] = useState<TooltipInfo | null>(null)
+  const [geoCount, setGeoCount] = useState(0)
+  const svgWrapRef = useRef<HTMLDivElement>(null)
 
-  const centroids = useMemo(() => {
-    const map: Record<string, { cx: number; cy: number }> = {}
-    for (const s of indiaStatePaths) {
-      map[s.name] = computeCentroid(s.d)
-    }
-    return map
+  useEffect(() => {
+    fetch(TOPOJSON_URL)
+      .then((res) => {
+        if (!res.ok) throw new Error(`Failed to load map data: ${res.status}`)
+        return res.json()
+      })
+      .then((data) => {
+        setTopoData(data)
+        const geoms = data?.objects?.data?.geometries || []
+        setGeoCount(geoms.length)
+      })
+      .catch((err) => console.error('Failed to load India TopoJSON:', err))
   }, [])
 
   const activeState = selectedState || hoveredState
@@ -268,6 +287,37 @@ export default function IndiaMap() {
 
   const unresolvedProblems = activeData ? activeData.problems.filter(p => p.status !== 'Resolved') : []
 
+  const getStateName = (geo: any): string => {
+    const raw = geo.properties?.NAME_1 || ''
+    return NAME_REMAP[raw] || raw
+  }
+
+  const handleMouseEnter = (name: string, data: StateSeverity | undefined, e: React.MouseEvent) => {
+    setHoveredState(name)
+    const rect = svgWrapRef.current?.getBoundingClientRect()
+    if (rect) {
+      setTooltip({
+        name,
+        count: data ? data.complaintCount : null,
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+      })
+    }
+  }
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!tooltip) return
+    const rect = svgWrapRef.current?.getBoundingClientRect()
+    if (rect) {
+      setTooltip(prev => prev ? { ...prev, x: e.clientX - rect.left, y: e.clientY - rect.top } : prev)
+    }
+  }
+
+  const handleMouseLeave = () => {
+    setHoveredState(null)
+    setTooltip(null)
+  }
+
   return (
     <section className="civic-india-map" aria-label="Civic problem severity across India">
       <div className="civic-section-inner" ref={ref}>
@@ -279,68 +329,133 @@ export default function IndiaMap() {
         </div>
 
         <div className={`civic-india-map-layout ${inView ? 'civic-reveal' : ''}`}>
-          <div className="civic-india-map-svg-wrap">
-            <svg
-              viewBox="52 59 1522 1723"
-              className="civic-india-map-svg"
-              role="img"
-              shapeRendering="geometricPrecision"
-              aria-label="Map of India showing civic problem severity by state"
-            >
-              <defs>
-                <radialGradient id="mapBgGlow" cx="50%" cy="45%" r="55%">
-                  <stop offset="0%" stopColor="rgba(212, 175, 55, 0.08)" />
-                  <stop offset="100%" stopColor="rgba(212, 175, 55, 0)" />
-                </radialGradient>
-              </defs>
-              <rect x="52" y="59" width="1522" height="1723" fill="url(#mapBgGlow)" />
-              {indiaStatePaths.map((s) => {
-                const data = stateDataMap[s.name]
-                const level = data ? getCaseLevel(data.complaintCount) : 'low'
-                const fill = data ? LEVEL_FILL[level] : '#3d2a17'
-                const glow = data ? LEVEL_GLOW[level] : 'rgba(212, 175, 55, 0.15)'
-                const isActive = activeState === s.name
-                return (
-                  <g key={s.id}>
-                    <path
-                      d={s.d}
-                      className={`india-state-path ${isActive ? 'india-state-active' : ''}`}
-                      fill={fill}
-                      stroke={isActive ? '#f5d061' : '#d4af37'}
-                      strokeWidth={isActive ? 2 : 1.25}
-                      strokeLinejoin="round"
-                      strokeLinecap="round"
-                      onMouseEnter={() => setHoveredState(s.name)}
-                      onMouseLeave={() => setHoveredState(null)}
-                      onClick={() => setSelectedState(selectedState === s.name ? null : s.name)}
+          <div className="civic-india-map-card">
+            <div className="civic-india-map-svg-wrap" ref={svgWrapRef} onMouseMove={handleMouseMove}>
+              {topoData ? (
+                <>
+                  <ComposableMap
+                    projection="geoMercator"
+                    projectionConfig={{
+                      center: [80, 22],
+                      scale: 1200,
+                    }}
+                    className="civic-india-map-svg"
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                    }}
+                  >
+                    <Geographies geography={topoData}>
+                      {({ geographies }) => {
+                        return (
+                        <>
+                          {geographies.map((geo, i) => {
+                            const name = getStateName(geo)
+                            const data = stateDataMap[name]
+                            const level = data ? getCaseLevel(data.complaintCount) : null
+                            const fill = data ? LEVEL_FILL[level!] : NO_DATA_FILL
+                            const fillBright = data ? LEVEL_FILL_BRIGHT[level!] : '#e0d2ba'
+                            const glow = data ? LEVEL_GLOW[level!] : 'rgba(169, 101, 69, 0.2)'
+                            const isActive = activeState === name
+                            const staggerDelay = `${Math.min(i * 0.035, 1.4)}s`
+
+                            return (
+                              <Geography
+                                key={geo.rsmKey}
+                                geography={geo}
+                                className={`india-state-path ${isActive ? 'india-state-active' : ''}`}
+                                fill={isActive ? fillBright : fill}
+                                stroke={isActive ? '#8a5a2e' : '#a08060'}
+                                strokeWidth={isActive ? 2 : 1}
+                                strokeLinejoin="round"
+                                strokeLinecap="round"
+                                onMouseEnter={(e) => handleMouseEnter(name, data, e)}
+                                onMouseLeave={handleMouseLeave}
+                                onClick={() => setSelectedState(selectedState === name ? null : name)}
+                                style={{
+                                  cursor: 'pointer',
+                                  transition: 'fill 0.3s ease, stroke-width 0.25s ease, filter 0.25s ease, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                                  filter: isActive
+                                    ? `drop-shadow(0 0 8px ${glow}) brightness(1.15)`
+                                    : hoveredState === null
+                                      ? 'none'
+                                      : 'brightness(0.92)',
+                                  outline: 'none',
+                                  transformOrigin: 'center',
+                                  transformBox: 'fill-box',
+                                  animation: `india-state-fade-in 0.5s ease ${staggerDelay} both`,
+                                }}
+                              >
+                                <title>{name}{data ? ` — ${data.complaintCount.toLocaleString('en-IN')} complaints` : ' — No data'}</title>
+                              </Geography>
+                            )
+                          })}
+                          {/* Labels for states with data */}
+                          {geographies
+                            .filter((geo) => {
+                              const name = getStateName(geo)
+                              return !!stateDataMap[name]
+                            })
+                            .map((geo, i) => {
+                              const name = getStateName(geo)
+                              const data = stateDataMap[name]
+                              if (!data || !geo.svgPath) return null
+                              const svgEl = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+                              const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+                              pathEl.setAttribute('d', geo.svgPath)
+                              svgEl.appendChild(pathEl)
+                              svgEl.style.position = 'absolute'
+                              svgEl.style.visibility = 'hidden'
+                              document.body.appendChild(svgEl)
+                              const bbox = pathEl.getBBox()
+                              document.body.removeChild(svgEl)
+                              const cx = bbox.x + bbox.width / 2
+                              const cy = bbox.y + bbox.height / 2
+                              return (
+                                <text
+                                  key={`label-${geo.rsmKey}`}
+                                  x={cx}
+                                  y={cy}
+                                  className="india-state-label"
+                                  textAnchor="middle"
+                                  dominantBaseline="middle"
+                                  pointerEvents="none"
+                                  style={{ animation: `india-state-fade-in 0.5s ease ${Math.min(i * 0.035 + 0.3, 1.6)}s both` }}
+                                >
+                                  {data.complaintCount >= 1000
+                                    ? `${(data.complaintCount / 1000).toFixed(1)}k`
+                                    : data.complaintCount}
+                                </text>
+                              )
+                            })}
+                        </>
+                        )
+                      }}
+                    </Geographies>
+                  </ComposableMap>
+                  {tooltip && (
+                    <div
+                      className="india-map-tooltip"
                       style={{
-                        cursor: 'pointer',
-                        transition: 'opacity 0.25s ease, stroke-width 0.25s ease, filter 0.25s ease',
-                        filter: isActive ? `drop-shadow(0 0 10px ${glow})` : 'none',
+                        left: tooltip.x + 14,
+                        top: tooltip.y - 10,
                       }}
                     >
-                      <title>{s.name}{data ? ` — ${data.complaintCount.toLocaleString('en-IN')} complaints` : ''}</title>
-                    </path>
-                    {data && (() => {
-                      const c = centroids[s.name]
-                      if (!c) return null
-                      return (
-                        <text
-                          x={c.cx}
-                          y={c.cy}
-                          className="india-state-label"
-                          textAnchor="middle"
-                          dominantBaseline="middle"
-                          pointerEvents="none"
-                        >
-                          {data.complaintCount >= 1000 ? `${(data.complaintCount / 1000).toFixed(1)}k` : data.complaintCount}
-                        </text>
-                      )
-                    })()}
-                  </g>
-                )
-              })}
-            </svg>
+                      <span className="india-map-tooltip-name">{tooltip.name}</span>
+                      {tooltip.count !== null ? (
+                        <span className="india-map-tooltip-count">{tooltip.count.toLocaleString('en-IN')} complaints</span>
+                      ) : (
+                        <span className="india-map-tooltip-count india-map-tooltip-nodata">No data</span>
+                      )}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="civic-india-map-loading">
+                  <span>Loading map…</span>
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="civic-india-map-side">
@@ -349,11 +464,28 @@ export default function IndiaMap() {
               <div className="civic-india-legend-items">
                 {(['high', 'medium', 'low'] as const).map(lvl => (
                   <div key={lvl} className="civic-india-legend-item">
-                    <span className="civic-india-legend-dot" style={{ background: LEVEL_FILL[lvl], boxShadow: `0 0 6px ${LEVEL_GLOW[lvl]}` }} />
+                    <span
+                      className="civic-india-legend-dot"
+                      style={{
+                        background: LEVEL_FILL[lvl],
+                        boxShadow: `0 0 8px ${LEVEL_GLOW[lvl]}, 0 0 3px ${LEVEL_GLOW[lvl]}`,
+                      }}
+                    />
                     <span className="civic-india-legend-label">{LEVEL_LABEL[lvl]}</span>
                     <span className="civic-india-legend-count">{levelCounts[lvl]} states</span>
                   </div>
                 ))}
+                <div className="civic-india-legend-item">
+                  <span
+                    className="civic-india-legend-dot"
+                    style={{
+                      background: NO_DATA_FILL,
+                      boxShadow: '0 0 6px rgba(169, 101, 69, 0.15)',
+                    }}
+                  />
+                  <span className="civic-india-legend-label">No data</span>
+                  <span className="civic-india-legend-count">{geoCount - stateData.length} states</span>
+                </div>
               </div>
             </div>
 

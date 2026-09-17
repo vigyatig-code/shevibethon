@@ -1,13 +1,11 @@
 import { useState, useEffect } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
-import { FileText, Search, List, BarChart3, Menu, X, Leaf, Accessibility, Map, MapPin, Heart, LogIn, LogOut, UserCircle } from 'lucide-react'
+import { FileText, Search, List, BarChart3, Menu, X, Leaf, Accessibility, Map, MapPin, Heart } from 'lucide-react'
 import AnimatedBackground from './AnimatedBackground'
 import ScrollShapeParticles from './ScrollShapeParticles'
 import ScrollProgress from './ScrollProgress'
 import SiteFooter from './SiteFooter'
 import SplashCursor from './SplashCursor'
-import SignInModal from './SignInModal'
-import { useAuth } from '../lib/auth'
 
 const navItems = [
   { to: '/', label: 'About', icon: Leaf, end: true },
@@ -24,24 +22,14 @@ const navItems = [
 export default function Layout() {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
-  const [signInOpen, setSignInOpen] = useState(false)
   const location = useLocation()
   const isHomePage = location.pathname === '/'
-  const { isSignedIn, profile, signOut, needsProfile } = useAuth()
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40)
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
-
-  useEffect(() => {
-    if (needsProfile) {
-      setSignInOpen(true)
-    }
-  }, [needsProfile])
-
-  const displayName = profile?.full_name || profile?.phone || 'Account'
 
   return (
     <div className={`civic-app${isHomePage ? '' : ' inner-page'}`}>
@@ -78,23 +66,6 @@ export default function Layout() {
               </Link>
             </nav>
 
-            <div className="civic-auth-area">
-              {isSignedIn ? (
-                <div className="civic-user-chip">
-                  <UserCircle size={18} />
-                  <span className="civic-user-chip-name">{displayName}</span>
-                  <button className="civic-sign-out-btn" onClick={signOut} aria-label="Sign out" title="Sign out">
-                    <LogOut size={14} />
-                  </button>
-                </div>
-              ) : (
-                <button className="civic-sign-in-btn" onClick={() => setSignInOpen(true)}>
-                  <LogIn size={16} />
-                  <span>Sign In</span>
-                </button>
-              )}
-            </div>
-
             <button
               className="civic-menu-toggle"
               onClick={() => setMenuOpen((o) => !o)}
@@ -112,8 +83,6 @@ export default function Layout() {
       </main>
 
       <SiteFooter />
-
-      <SignInModal open={signInOpen} onClose={() => setSignInOpen(false)} />
     </div>
   )
 }

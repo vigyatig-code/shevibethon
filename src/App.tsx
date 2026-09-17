@@ -11,7 +11,6 @@ import DisabilitySupport from './pages/DisabilitySupport'
 import MapPage from './pages/MapPage'
 import MapViewPage from './pages/MapViewPage'
 import OpeningSplash from './components/OpeningSplash'
-import { AuthProvider } from './lib/auth'
 
 export default function App() {
   const [showSplash, setShowSplash] = useState(true)
@@ -19,7 +18,7 @@ export default function App() {
   const dismissSplash = useCallback(() => setShowSplash(false), [])
 
   return (
-    <AuthProvider>
+    <>
       {showSplash && <OpeningSplash onComplete={dismissSplash} />}
       <Routes>
         <Route element={<Layout />}>
@@ -35,6 +34,6 @@ export default function App() {
           <Route path="/map-view" element={<MapViewPage />} />
         </Route>
       </Routes>
-    </AuthProvider>
+    </>
   )
 }
