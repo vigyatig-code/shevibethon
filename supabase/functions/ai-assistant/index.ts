@@ -23,57 +23,53 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const apiKey = Deno.env.get("AI_API_KEY");
+    const apiKey = Deno.env.get("GEMINI_API_KEY");
 
     if (!apiKey) {
       return new Response(
         JSON.stringify({
           reply:
-            "I'm not fully connected yet — the AI service key hasn't been configured. Please ask the site administrator to set up the AI_API_KEY secret so I can answer your questions.",
+            "I'm not fully connected yet — the AI service key hasn't been configured. Please ask the site administrator to set up the GEMINI_API_KEY secret so I can answer your questions.",
         }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
-    const apiMessages = messages.map((m: { role: string; content: string }) => ({
-      role: m.role === "assistant" ? "assistant" : "user",
-      content: m.content,
+    const today = new Date().toISOString().split("T")[0];
+
+    // Gemini uses "contents" with role "user"/"model" and a separate "systemInstruction".
+    const geminiContents = messages.map((m: { role: string; content: string }) => ({
+      role: m.role === "assistant" ? "model" : "user",
+      parts: [{ text: m.content }],
     }));
 
-    const claudeRes = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01",
-      },
-      body: JSON.stringify({
-        model: "claude-opus-5",
-        max_tokens: 1024,
-        system: [
-          {
-            type: "text",
-            text: `Today's date is ${new Date().toISOString().split("T")[0]}.`,
-          },
-          {
-            type: "text",
-            text: SYSTEM_PROMPT,
-          },
-        ],
-        messages: apiMessages,
-        temperature: 1,
-        top_p: 0.7,
-        top_k: 5,
-        thinking: {
-          type: "adaptive",
+    const geminiRes = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-        stream: false,
-      }),
-    });
+        body: JSON.stringify({
+          systemInstruction: {
+            parts: [
+              { text: `Today's date is ${today}.` },
+              { text: SYSTEM_PROMPT },
+            ],
+          },
+          contents: geminiContents,
+          generationConfig: {
+            temperature: 1,
+            topP: 0.7,
+            maxOutputTokens: 1024,
+          },
+        }),
+      },
+    );
 
-    if (!claudeRes.ok) {
-      const errText = await claudeRes.text();
-      console.error("Anthropic API error:", errText);
+    if (!geminiRes.ok) {
+      const errText = await geminiRes.text();
+      console.error("Gemini API error:", errText);
       return new Response(
         JSON.stringify({
           reply: "I had trouble reaching the AI service just now. Please try again in a moment.",
@@ -82,11 +78,11 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const claudeData = await claudeRes.json();
+    const geminiData = await geminiRes.json();
     const reply =
-      claudeData?.content
-        ?.filter((block: { type: string }) => block.type === "text")
-        ?.map((block: { text: string }) => block.text)
+      geminiData?.candidates?.[0]?.content?.parts
+        ?.map((part: { text?: string }) => part.text)
+        ?.filter((t: string | undefined): t is string => typeof t === "string")
         ?.join("\n") ??
       "I couldn't generate a response for that. Could you rephrase your question?";
 

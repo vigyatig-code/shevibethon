@@ -19,6 +19,7 @@ const categories = [
   { key: 'water', label: 'Water' },
   { key: 'sanitation', label: 'Sanitation' },
   { key: 'electricity', label: 'Electricity' },
+  { key: 'disasters', label: 'Disasters & Emergencies' },
   { key: 'general', label: 'General Civic News' },
 ]
 
@@ -123,7 +124,7 @@ export default function BreakingNews() {
             </span>
           </div>
           <p className="civic-section-subtitle">
-            Civic problems and solutions from across India — infrastructure, sanitation, transport, environment, and urban governance updates.
+            Civic problems and solutions from across India — infrastructure, sanitation, transport, environment, urban governance, and major disaster and emergency updates.
           </p>
 
           <div className="civic-news-controls">

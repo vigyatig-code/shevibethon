@@ -12,6 +12,7 @@ const CATEGORY_QUERIES: Record<string, string> = {
   water: 'India AND ("water supply" OR "water crisis" OR "water logging" OR "water shortage" OR "drinking water" OR "water pipeline" OR "sewage overflow" OR "drainage overflow" OR "water board" OR desilting)',
   sanitation: 'India AND (garbage OR "waste management" OR "garbage collection" OR "sewage treatment" OR "street cleaning" OR swachh OR "waste collection" OR "dumping ground" OR "landfill fire" OR "waste segregation")',
   electricity: 'India AND ("power cut" OR "power outage" OR "street light" OR streetlight OR "load shedding" OR "power failure" OR "electricity board" OR "transformer fire" OR "faulty meter" OR "power restoration")',
+  disasters: 'India AND (flood OR landslide OR cyclone OR "building collapse" OR "bridge collapse" OR "urban flooding" OR deluge OR cloudburst OR avalanche OR earthquake OR "dam breach" OR embankment OR "flood alert" OR "flood warning" OR "disaster relief" OR "relief camp" OR evacuation OR "NDRF" OR "fire accident" OR "factory fire" OR "wildfire" OR "heat wave" OR cold wave)',
 };
 
 const FALLBACK_QUERY = 'India AND (municipal OR civic OR "city infrastructure" OR "urban governance" OR "public works" OR municipality OR corporation OR "smart city")';
@@ -28,6 +29,19 @@ const EXCLUDE_KEYWORDS = [
   "merger", "acquisition", "quarterly results", "revenue growth", "profit margin",
   "tanker rate", "shipping rate", "freight rate", "charter rate",
   "gold price", "silver price", "commodity market",
+  "suicide", "suicidal", "self-harm", "self harm", "took own life", "ended life",
+  "obituary", "obituaries", "passed away", "funeral", "cremation", "condolence",
+  "murder", "homicide", "assault case", "stabbed", "strangled",
+  "rape", "sexual assault", "molestation", "harassment case",
+  "kidnap", "abduction case",
+  "robbery", "theft case", "burglary", "looted",
+  "arrested for", "charged with", "convicted of", "sentenced to",
+  "drug overdose", "narcotics", "drug bust", "drug cartel",
+  "domestic violence", "dowry death", "honor killing", "honour killing",
+  "road rage", "hit-and-run", "hit and run", "drunk driving",
+  "body found", "dead body", "corpse",
+  "personal tragedy", "grief", "mourning",
+  "missing person", "missing girl", "missing boy", "missing child",
 ];
 
 const CATEGORY_KEYWORDS: Record<string, string[]> = {
@@ -65,6 +79,17 @@ const CATEGORY_KEYWORDS: Record<string, string[]> = {
     "transformer blast", "wire snapped", "pole fire",
     "electricity", "power", "transformer", "grid", "discom",
   ],
+  disasters: [
+    "flood", "landslide", "cyclone", "building collapse", "bridge collapse",
+    "urban flooding", "deluge", "cloudburst", "avalanche", "earthquake",
+    "dam breach", "embankment", "flood alert", "flood warning",
+    "disaster relief", "relief camp", "evacuation", "ndrf",
+    "fire accident", "factory fire", "wildfire", "heat wave", "cold wave",
+    "storm damage", "roof collapse", "wall collapse", "structure collapse",
+    "mudslide", "flash flood", "river overflow", "dam overflow",
+    "flooded", "inundation", "waterlogged", "marooned",
+    "rescue operations", "airdropped", "relief material",
+  ],
 };
 
 function isRelevant(text: string): boolean {
@@ -77,7 +102,10 @@ function isRelevant(text: string): boolean {
 
 function categorize(text: string): string {
   const lower = text.toLowerCase();
+  // Check disasters first so flood/landslide articles don't get swallowed by water category.
+  if (CATEGORY_KEYWORDS.disasters.some((kw) => lower.includes(kw))) return "disasters";
   for (const [cat, keywords] of Object.entries(CATEGORY_KEYWORDS)) {
+    if (cat === "disasters") continue;
     if (keywords.some((kw) => lower.includes(kw))) return cat;
   }
   return "general";

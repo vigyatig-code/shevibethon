@@ -58,7 +58,8 @@ export default function AIAssistant() {
       setShowSuggestions(false)
 
       try {
-        const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-assistant`
+        const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`
+        const history = messages.map((m) => ({ role: m.role, content: m.content }))
         const res = await fetch(apiUrl, {
           method: 'POST',
           headers: {
@@ -66,7 +67,8 @@ export default function AIAssistant() {
             Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
           },
           body: JSON.stringify({
-            messages: newMessages.map((m) => ({ role: m.role, content: m.content })),
+            message: trimmed,
+            history,
           }),
         })
 
