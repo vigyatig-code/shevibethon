@@ -91,8 +91,9 @@ export default function BreakingNews() {
       const data = await res.json()
       if (data.error) throw new Error(data.error)
       setNews(data.articles ?? [])
-    } catch {
-      setError('Unable to load news right now. Please try again in a moment.')
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Unable to load news right now.'
+      setError(msg)
       setNews([])
     } finally {
       setLoading(false)
