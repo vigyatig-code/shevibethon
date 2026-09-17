@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { FileText, CheckCircle2, AlertCircle, Loader2, Lock, Camera, X, MapPin, Navigation, Check, Mic, Square } from 'lucide-react'
+import { FileText, CheckCircle2, AlertCircle, Loader2, Lock, Camera, X, MapPin, Navigation, Check, Mic, Square, RotateCcw, SkipForward } from 'lucide-react'
 import { supabase, CATEGORIES, generateTrackingNumber, assessSeverity, uploadComplaintPhoto, type ComplaintInput } from '../lib/supabase'
 import TrueFocus from '../components/TrueFocus'
 import { useVoiceForm } from '../lib/useVoiceForm'
@@ -378,14 +378,45 @@ export default function FileComplaint() {
         </div>
 
         {voice.active && (
-          <div className="voice-fill-banner">
-            <Mic size={18} className="pulse" />
-            <span>Listening for: <strong>{voice.spokenField}</strong></span>
-            <button type="button" className="btn btn-ghost btn-sm" onClick={voice.stop}>
-              <Square size={14} />
-              Stop
-            </button>
-          </div>
+          <>
+            <div className="voice-fill-banner">
+              <Mic size={18} className="pulse" />
+              <span>Listening for: <strong>{voice.spokenField}</strong></span>
+              <span className="voice-final-hint">Say "final" to confirm each answer</span>
+              <button type="button" className="btn btn-ghost btn-sm" onClick={voice.stop}>
+                <Square size={14} />
+                Stop
+              </button>
+            </div>
+            {voice.status && (
+              <div className="voice-status-panel">
+                <div className="voice-status-header">
+                  <span className="voice-status-step">
+                    Step {voice.status.stepNum} of {voice.status.totalSteps}
+                  </span>
+                  <div className="voice-status-controls">
+                    <button type="button" className="voice-status-btn" onClick={voice.repeat} title="Repeat question">
+                      <RotateCcw size={15} />
+                      Repeat
+                    </button>
+                    <button type="button" className="voice-status-btn" onClick={voice.skip} title="Skip this field">
+                      <SkipForward size={15} />
+                      Skip
+                    </button>
+                    <button type="button" className="voice-status-btn voice-status-stop" onClick={voice.stop}>
+                      <X size={15} />
+                      Stop
+                    </button>
+                  </div>
+                </div>
+                <div className="voice-status-prompt">{voice.status.prompt}</div>
+                <div className="voice-status-heard-box">
+                  <span className="voice-status-heard-label">Heard:</span>
+                  <span className="voice-status-heard-text">{voice.status.heard}</span>
+                </div>
+              </div>
+            )}
+          </>
         )}
 
         <div className="form-actions">
