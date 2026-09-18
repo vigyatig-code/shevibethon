@@ -4745,6 +4745,164 @@ body {
   flex-wrap: wrap;
 }
 
+/* ==================== DUPLICATE / UPVOTE CARD ==================== */
+
+.duplicate-card {
+  background: var(--civic-glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--civic-border);
+  padding: 48px 40px;
+  text-align: center;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.25);
+  animation: slide-up 0.3s ease;
+}
+
+.duplicate-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  background: rgba(169, 101, 69, 0.12);
+  color: var(--civic-leaf);
+  border-radius: 50%;
+  margin-bottom: 24px;
+  animation: scale-in 0.4s ease;
+}
+
+.duplicate-icon.success {
+  background: rgba(34, 197, 94, 0.12);
+  color: var(--green-600);
+}
+
+.duplicate-card h2 {
+  font-family: var(--font-serif);
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: var(--civic-text-bright);
+  margin-bottom: 8px;
+}
+
+.duplicate-card > p {
+  color: var(--civic-muted);
+  margin-bottom: 24px;
+  max-width: 520px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.6;
+}
+
+.duplicate-match-info {
+  background: rgba(249, 244, 236, 0.5);
+  border: 1px solid var(--civic-border);
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+  margin: 0 auto 24px;
+  max-width: 480px;
+  text-align: left;
+}
+
+.duplicate-match-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(111, 78, 55, 0.08);
+}
+
+.duplicate-match-row:last-child {
+  border-bottom: none;
+}
+
+.duplicate-match-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--civic-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.duplicate-match-value {
+  font-size: 0.9rem;
+  color: var(--civic-text-bright);
+  font-weight: 500;
+  text-align: right;
+  max-width: 60%;
+}
+
+.duplicate-match-value.upvote-count {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--civic-amber);
+}
+
+.duplicate-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.duplicate-hint {
+  font-size: 0.825rem;
+  color: var(--civic-muted);
+  max-width: 460px;
+  margin: 0 auto;
+  line-height: 1.5;
+}
+
+/* Upvote badge on complaint cards */
+.cc-foot-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cc-upvotes {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--civic-amber);
+  background: rgba(169, 101, 69, 0.08);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(169, 101, 69, 0.15);
+}
+
+/* Upvote banner on complaint detail */
+.detail-upvote-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 32px;
+  background: rgba(169, 101, 69, 0.06);
+  border-bottom: 1px solid var(--civic-border);
+  color: var(--civic-leaf);
+  font-size: 0.875rem;
+}
+
+.detail-upvote-banner svg {
+  flex-shrink: 0;
+}
+
+.detail-upvote-banner strong {
+  color: var(--civic-amber);
+  font-weight: 700;
+}
+
+@media (max-width: 768px) {
+  .duplicate-card { padding: 32px 20px; }
+  .duplicate-card h2 { font-size: 1.5rem; }
+  .duplicate-match-info { padding: 16px; }
+  .duplicate-match-row { flex-direction: column; align-items: flex-start; gap: 2px; }
+  .duplicate-match-value { text-align: left; max-width: 100%; }
+}
+
 /* Track form */
 .track-page {
   position: relative;

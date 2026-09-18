@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { FileText, CheckCircle2, AlertCircle, Loader2, Lock, Camera, X, MapPin, Navigation, Check, Mic, Square, RotateCcw, SkipForward } from 'lucide-react'
-import { supabase, CATEGORIES, generateTrackingNumber, assessSeverity, uploadComplaintPhoto, type ComplaintInput } from '../lib/supabase'
+import { FileText, CheckCircle2, AlertCircle, Loader2, Lock, Camera, X, MapPin, Navigation, Check, Mic, Square, RotateCcw, SkipForward, ThumbsUp, Users, ArrowRight } from 'lucide-react'
+import { supabase, CATEGORIES, generateTrackingNumber, assessSeverity, uploadComplaintPhoto, findDuplicateComplaint, upvoteComplaint, type ComplaintInput, type DuplicateMatch } from '../lib/supabase'
 import TrueFocus from '../components/TrueFocus'
 import { useVoiceForm } from '../lib/useVoiceForm'
 
@@ -20,6 +20,9 @@ export default function FileComplaint() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<{ trackingNumber: string } | null>(null)
+  const [duplicate, setDuplicate] = useState<DuplicateMatch | null>(null)
+  const [upvoting, setUpvoting] = useState(false)
+  const [upvoteDone, setUpvoteDone] = useState(false)
 
   type LocationState = 'idle' | 'requesting' | 'granted' | 'denied' | 'error'
   const [locationState, setLocationState] = useState<LocationState>('idle')
@@ -111,6 +114,15 @@ export default function FileComplaint() {
     setError(null)
 
     try {
+      if (coords) {
+        const match = await findDuplicateComplaint(form.category, coords.lat, coords.lng)
+        if (match) {
+          setDuplicate(match)
+          setSubmitting(false)
+          return
+        }
+      }
+
       const trackingNumber = generateTrackingNumber()
       const severity = assessSeverity(form.category, form.subject, form.description)
 
@@ -143,6 +155,54 @@ export default function FileComplaint() {
     }
   }
 
+  const handleUpvote = async () => {
+    if (!duplicate) return
+    setUpvoting(true)
+    setError(null)
+    try {
+      await upvoteComplaint(duplicate.id)
+      setUpvoteDone(true)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to upvote. Please try again.')
+    } finally {
+      setUpvoting(false)
+    }
+  }
+
+  const handleFileAnyway = async () => {
+    setDuplicate(null)
+    setUpvoteDone(false)
+    setSubmitting(true)
+    setError(null)
+    try {
+      const trackingNumber = generateTrackingNumber()
+      const severity = assessSeverity(form.category, form.subject, form.description)
+      let photoUrl: string | null = null
+      if (photo) {
+        photoUrl = await uploadComplaintPhoto(photo)
+      }
+      const { error: insertError } = await supabase
+        .from('complaints')
+        .insert({
+          ...form,
+          tracking_number: trackingNumber,
+          status: 'Pending',
+          priority: 'Normal',
+          severity: severity,
+          photo_url: photoUrl,
+          latitude: coords?.lat ?? null,
+          longitude: coords?.lng ?? null,
+          location_name: locationName.trim() || null,
+        })
+      if (insertError) throw insertError
+      setSuccess({ trackingNumber })
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to submit complaint. Please try again.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
   if (success) {
     return (
       <div className="page-container">
@@ -168,6 +228,110 @@ export default function FileComplaint() {
               File Another
             </Link>
           </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (duplicate) {
+    return (
+      <div className="page-container">
+        <div className="duplicate-card">
+          {upvoteDone ? (
+            <>
+              <div className="duplicate-icon success">
+                <CheckCircle2 size={56} />
+              </div>
+              <h2>Upvote Added!</h2>
+              <p>Thanks for confirming this issue. Your support helps prioritize it for faster resolution.</p>
+              <div className="duplicate-match-info">
+                <div className="duplicate-match-row">
+                  <span className="duplicate-match-label">Issue</span>
+                  <span className="duplicate-match-value">{duplicate.subject}</span>
+                </div>
+                <div className="duplicate-match-row">
+                  <span className="duplicate-match-label">Tracking Number</span>
+                  <span className="duplicate-match-value">{duplicate.tracking_number}</span>
+                </div>
+                <div className="duplicate-match-row">
+                  <span className="duplicate-match-label">Total Upvotes</span>
+                  <span className="duplicate-match-value upvote-count">{duplicate.upvote_count + 1}</span>
+                </div>
+              </div>
+              <div className="success-actions">
+                <button
+                  className="btn btn-primary"
+                  onClick={() => navigate(`/track/${duplicate.tracking_number}`)}
+                >
+                  View This Issue
+                </button>
+                <Link to="/file" className="btn btn-outline" onClick={() => { setDuplicate(null); setUpvoteDone(false); setForm({ name: '', email: '', category: CATEGORIES[0], subject: '', description: '' }); setPhoto(null); setPhotoPreview(null); setCoords(null); setLocationName(''); setLocationState('idle'); }}>
+                  File a Different Issue
+                </Link>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="duplicate-icon">
+                <Users size={56} />
+              </div>
+              <h2>This Issue Has Already Been Reported</h2>
+              <p>Someone near you has already reported this same problem. Instead of filing a duplicate, you can upvote the existing report to show that more people are affected — this helps prioritize it for faster action.</p>
+              <div className="duplicate-match-info">
+                <div className="duplicate-match-row">
+                  <span className="duplicate-match-label">Issue</span>
+                  <span className="duplicate-match-value">{duplicate.subject}</span>
+                </div>
+                <div className="duplicate-match-row">
+                  <span className="duplicate-match-label">Category</span>
+                  <span className="duplicate-match-value">{duplicate.category}</span>
+                </div>
+                <div className="duplicate-match-row">
+                  <span className="duplicate-match-label">Tracking Number</span>
+                  <span className="duplicate-match-value">{duplicate.tracking_number}</span>
+                </div>
+                <div className="duplicate-match-row">
+                  <span className="duplicate-match-label">Distance</span>
+                  <span className="duplicate-match-value">{duplicate.distance_meters < 1000 ? `${Math.round(duplicate.distance_meters)} m away` : `${(duplicate.distance_meters / 1000).toFixed(1)} km away`}</span>
+                </div>
+                <div className="duplicate-match-row">
+                  <span className="duplicate-match-label">Current Upvotes</span>
+                  <span className="duplicate-match-value upvote-count">{duplicate.upvote_count}</span>
+                </div>
+              </div>
+              {error && (
+                <div className="alert alert-error">
+                  <AlertCircle size={20} />
+                  <span>{error}</span>
+                </div>
+              )}
+              <div className="duplicate-actions">
+                <button
+                  className="btn btn-primary btn-lg"
+                  onClick={handleUpvote}
+                  disabled={upvoting}
+                >
+                  {upvoting ? (
+                    <><Loader2 size={20} className="spin" /> Adding Upvote...</>
+                  ) : (
+                    <><ThumbsUp size={20} /> Upvote This Issue</>
+                  )}
+                </button>
+                <button
+                  className="btn btn-outline"
+                  onClick={handleFileAnyway}
+                  disabled={submitting}
+                >
+                  {submitting ? (
+                    <><Loader2 size={18} className="spin" /> Filing...</>
+                  ) : (
+                    <><ArrowRight size={18} /> File as New Issue Anyway</>
+                  )}
+                </button>
+              </div>
+              <p className="duplicate-hint">Upvoting is instant — no tracking number needed. Filing as a new issue creates a separate record with its own tracking number.</p>
+            </>
+          )}
         </div>
       </div>
     )

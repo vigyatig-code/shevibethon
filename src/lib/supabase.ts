@@ -20,11 +20,21 @@ export interface Complaint {
   latitude: number | null
   longitude: number | null
   location_name: string | null
+  upvote_count: number
   created_at: string
   updated_at: string
 }
 
-export type ComplaintInput = Omit<Complaint, 'id' | 'tracking_number' | 'status' | 'priority' | 'severity' | 'photo_url' | 'latitude' | 'longitude' | 'location_name' | 'created_at' | 'updated_at'>
+export interface DuplicateMatch {
+  id: string
+  tracking_number: string
+  subject: string
+  category: string
+  upvote_count: number
+  distance_meters: number
+}
+
+export type ComplaintInput = Omit<Complaint, 'id' | 'tracking_number' | 'status' | 'priority' | 'severity' | 'photo_url' | 'latitude' | 'longitude' | 'location_name' | 'upvote_count' | 'created_at' | 'updated_at'>
 
 export const CATEGORIES = [
   'Roads & Infrastructure',
@@ -140,4 +150,31 @@ export async function uploadComplaintPhoto(file: File): Promise<string> {
     .getPublicUrl(filePath)
 
   return urlData.publicUrl
+}
+
+export async function findDuplicateComplaint(
+  category: string,
+  latitude: number,
+  longitude: number,
+  radiusMeters = 200,
+): Promise<DuplicateMatch | null> {
+  const { data, error } = await supabase.rpc('find_duplicate_complaint', {
+    p_category: category,
+    p_latitude: latitude,
+    p_longitude: longitude,
+    p_radius_meters: radiusMeters,
+  })
+
+  if (error) throw error
+  if (!data || data.length === 0) return null
+  return data[0] as DuplicateMatch
+}
+
+export async function upvoteComplaint(complaintId: string): Promise<number> {
+  const { data, error } = await supabase.rpc('upvote_complaint', {
+    p_complaint_id: complaintId,
+  })
+
+  if (error) throw error
+  return data as number
 }

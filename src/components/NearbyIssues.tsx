@@ -177,6 +177,7 @@ function generateDemoNearby(lat: number, lng: number): NearbyComplaint[] {
       latitude: lat + dLat,
       longitude: lng + dLng,
       location_name: t.location_name,
+      upvote_count: 0,
       created_at: created,
       updated_at: created,
       distance: distKm,

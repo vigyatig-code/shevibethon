@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { Search, AlertCircle, Loader2, ArrowLeft, Clock, CheckCircle2, XCircle, Eye, Lock, Bell, BellOff } from 'lucide-react'
+import { Search, AlertCircle, Loader2, ArrowLeft, Clock, CheckCircle2, XCircle, Eye, Lock, Bell, BellOff, ThumbsUp } from 'lucide-react'
 import { supabase, type Complaint, STATUSES, SEVERITY_COLORS } from '../lib/supabase'
 import Galaxy from '../components/Galaxy'
 
@@ -204,6 +204,13 @@ export default function TrackComplaint() {
             <h3>Description</h3>
             <p>{complaint.description}</p>
           </div>
+
+          {complaint.upvote_count > 0 && (
+            <div className="detail-upvote-banner">
+              <ThumbsUp size={20} />
+              <span><strong>{complaint.upvote_count}</strong> {complaint.upvote_count === 1 ? 'person has' : 'people have'} confirmed this issue exists in their area</span>
+            </div>
+          )}
 
           <div className="status-timeline">
             <h3>Status Timeline</h3>

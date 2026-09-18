@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import { AlertCircle, Loader2, Search, MapPin, X, Navigation } from 'lucide-react'
+import { AlertCircle, Loader2, Search, MapPin, X, Navigation, ThumbsUp } from 'lucide-react'
 import { supabase, type Complaint } from '../lib/supabase'
 
 const STATUS_BADGE_CLASS: Record<string, string> = {
@@ -291,9 +291,16 @@ export default function ComplaintList() {
                       ● {c.severity}
                     </span>
                   </div>
-                  <Link to={`/track/${c.tracking_number}`} className="cc-view-link">
-                    View record ↗
-                  </Link>
+                  <div className="cc-foot-right">
+                    {c.upvote_count > 0 && (
+                      <span className="cc-upvotes" title={`${c.upvote_count} people upvoted this issue`}>
+                        <ThumbsUp size={13} /> {c.upvote_count}
+                      </span>
+                    )}
+                    <Link to={`/track/${c.tracking_number}`} className="cc-view-link">
+                      View record ↗
+                    </Link>
+                  </div>
                 </div>
               </div>
             )
