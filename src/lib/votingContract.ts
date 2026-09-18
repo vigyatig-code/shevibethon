@@ -1,10 +1,10 @@
 import { createPublicClient, createWalletClient, custom, http } from 'viem'
-import { localhost } from 'viem/chains'
+import { polygonAmoy } from 'viem/chains'
 
 export const CONTRACT_ADDRESS =
-  '0xe7f1725e7734ce288f8367e1bb143e90bb3f0512' as const
+  '0x0000000000000000000000000000000000000000' as const
 
-export const CHAIN = localhost
+export const CHAIN = polygonAmoy
 
 export const VOTING_ABI = [
   {
