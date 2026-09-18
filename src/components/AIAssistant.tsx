@@ -114,7 +114,7 @@ export default function AIAssistant() {
       <button
         className={`ai-fab ${open ? 'open' : ''}`}
         onClick={() => setOpen((o) => !o)}
-        aria-label={open ? 'Close AI assistant' : 'Open AI assistant'}
+        aria-label={open ? 'Close Ask Mitra' : 'Open Ask Mitra'}
         aria-expanded={open}
       >
         {open ? <X size={22} /> : <Sparkles size={24} />}
@@ -130,7 +130,7 @@ export default function AIAssistant() {
               <Bot size={18} />
             </span>
             <div className="ai-chat-header-text">
-              <span className="ai-chat-header-name">Site Assistant</span>
+              <span className="ai-chat-header-name">Ask Mitra</span>
               <span className="ai-chat-header-status">
                 <span className="ai-status-dot" />
                 Online
@@ -203,7 +203,7 @@ export default function AIAssistant() {
             ref={inputRef}
             type="text"
             className="ai-chat-input"
-            placeholder="Ask me anything..."
+            placeholder="Ask Mitra anything..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
             disabled={loading}
