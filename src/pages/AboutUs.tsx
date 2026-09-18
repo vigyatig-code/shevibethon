@@ -111,7 +111,7 @@ export default function AboutUs() {
         <div className="form-page-icon">
           <Info size={32} />
         </div>
-        <h1>About Civic Portal</h1>
+        <h1>About Nazar</h1>
         <p>A platform that turns everyday civic concerns into visible, trackable progress.</p>
       </div>
 
@@ -122,7 +122,7 @@ export default function AboutUs() {
             Every resident deserves a voice in how their neighborhood is maintained and improved.
           </h2>
           <p className="civic-about-mission-text">
-            Civic Portal is a community-driven platform that helps citizens report local civic issues —
+            Nazar is a community-driven platform that helps citizens report local civic issues —
             potholed roads, water supply problems, sanitation and waste collection gaps, faulty street lighting,
             drainage overflows, and more — and follow them through to resolution. We believe that when people can
             easily report what needs fixing, and when the process is transparent for everyone, public services
