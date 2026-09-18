@@ -1,48 +1,58 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Info, FileText, Search, ThumbsUp, CheckCircle2, Users, Building2, Leaf, ChevronDown } from 'lucide-react'
+import { Info, FileText, Search, ThumbsUp, CheckCircle2, Users, Building2, Leaf, Plus } from 'lucide-react'
 import { useInView } from '../lib/hooks'
 import Aurora from '../components/Aurora'
 
-interface AboutFAQ {
+interface FAQ {
   question: string
   answer: string
 }
 
-const ABOUT_FAQS: AboutFAQ[] = [
+const ABOUT_FAQS: FAQ[] = [
   {
-    question: 'How do I report a civic issue?',
+    question: 'What makes Nazar different from just complaining on social media?',
     answer:
-      'Click "Report an Issue" in the navigation, fill in the category, subject, and a description of the problem, and submit. You can optionally attach a photo and share your location to help authorities locate the issue faster. After submitting, you will receive a tracking number you can use to follow your report.',
+      'Every report here becomes a permanent, trackable record — not a tweet that gets lost. Once submitted, it can\u2019t be edited or deleted by anyone, so it stays an honest paper trail that authorities and the public can hold accountable over time.',
   },
   {
-    question: 'Can I track the status of my complaint?',
+    question: 'How do I actually report something, and what happens after?',
     answer:
-      'Yes. Every report receives a unique tracking number (format CMP-XXXXXXXX). Go to the "Updates" page, enter your tracking number, and you will see the current status — Pending, Under Review, Resolved, or Rejected — along with any updates and a timeline of progress.',
+      'Hit \u201CReport an Issue,\u201D pick a category, describe the problem, and drop a photo if you\u2019ve got one. It\u2019s locked in permanently and gets a tracking ID (like CMP-ABCD1234) so you can follow its journey from Pending to Resolved.',
   },
   {
-    question: 'Is my report anonymous?',
+    question: 'Can I see problems near me before I even report mine?',
     answer:
-      'You can file a report without creating an account — anonymous filing is supported. However, providing your name and email helps authorities contact you if they need more details about the issue. Your contact information is only visible to the platform administrators and the assigned government body, not to the general public.',
+      'Yes — our Map lets you explore active complaints across India visually, either as pins you can click for case details or as a state-by-state heatmap showing where problems are most concentrated. See the pattern before you add to it.',
   },
   {
-    question: 'How is priority or urgency decided?',
+    question: 'I have a disability — does this site actually work for me, or is \u201Caccessibility\u201D just a checkbox here?',
     answer:
-      'Each report is automatically assessed for severity based on the category and the words used in your description. Issues involving immediate danger, health hazards, or safety risks are flagged as Critical or High priority. Lower-impact issues are rated Medium or Low. This helps authorities triage the most urgent problems first.',
+      'It\u2019s built in, not bolted on. Choose your disability type — visual, hearing, mobility, or cognitive — and the site adapts: voice commands, automatic audio descriptions, and full Hindi support included. You can even speak your disability type aloud instead of clicking.',
   },
   {
-    question: 'Can I edit or delete a submitted report?',
+    question: 'How do I know the numbers on this site aren\u2019t made up?',
     answer:
-      'Once a report is submitted, it cannot be edited or deleted. This ensures a transparent, tamper-proof record of every complaint and its resolution. If you made an error or the issue has changed, you can file a new report with the corrected details, or contact the platform team with your tracking number for assistance.',
+      'Our Public Insights Dashboard shows everything live — total complaints, resolution rates, category breakdowns — pulled straight from real submitted reports, not curated PR stats.',
   },
   {
-    question: 'How does voting work?',
+    question: 'What\u2019s Ask Mitra, and is it just a chatbot that dodges my questions?',
     answer:
-      'On the "Vote" page, you can browse open civic issues and add your support to the ones that affect you. Each issue shows a running vote count. Reports with more community votes surface higher in priority, signaling to authorities which problems matter most to residents.',
+      'Ask Mitra is our AI assistant built specifically to help you use this site — filing reports, understanding statuses, finding the right category — not a generic bot reciting canned answers.',
+  },
+  {
+    question: 'Why does voting happen on a blockchain instead of a normal poll?',
+    answer:
+      'Because a normal poll can be quietly edited. Blockchain voting means your vote — and everyone else\u2019s — is locked in and verifiable, so no one, including us, can alter the results after the fact.',
+  },
+  {
+    question: 'Is the civic news real-time, or just old headlines dressed up?',
+    answer:
+      'It\u2019s live, continuously refreshed from real Indian news sources — categorized by Roads, Water, Sanitation, Electricity, and Disasters — so you\u2019re seeing what\u2019s actually unfolding, not a static news archive.',
   },
 ]
 
-function AboutFaqItem({ faq, index }: { faq: AboutFAQ; index: number }) {
+function AboutFaqItem({ faq }: { faq: FAQ }) {
   const [open, setOpen] = useState(false)
   return (
     <div className={`civic-faq-item ${open ? 'open' : ''}`}>
@@ -51,9 +61,10 @@ function AboutFaqItem({ faq, index }: { faq: AboutFAQ; index: number }) {
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
       >
-        <span className="civic-faq-q-num">{String(index + 1).padStart(2, '0')}</span>
         <span className="civic-faq-q-text">{faq.question}</span>
-        <ChevronDown size={18} className={`civic-faq-chevron ${open ? 'rotated' : ''}`} />
+        <span className={`civic-faq-plus ${open ? 'rotated' : ''}`}>
+          <Plus size={22} />
+        </span>
       </button>
       <div className={`civic-faq-answer ${open ? 'open' : ''}`}>
         <p className="civic-faq-answer-text">{faq.answer}</p>
@@ -222,9 +233,9 @@ export default function AboutUs() {
             <h2 className="civic-section-title">Frequently asked questions</h2>
             <p className="civic-section-subtitle">Quick answers to common questions about how the portal works.</p>
           </div>
-          <div className="civic-about-faq-list">
+          <div className="civic-faq-list">
             {ABOUT_FAQS.map((faq, i) => (
-              <AboutFaqItem key={i} faq={faq} index={i} />
+              <AboutFaqItem key={i} faq={faq} />
             ))}
           </div>
           <div className="civic-about-faq-more">
