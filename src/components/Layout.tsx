@@ -8,6 +8,7 @@ import SiteFooter from './SiteFooter'
 import SplashCursor from './SplashCursor'
 import AIAssistant from './AIAssistant'
 import AuthModal from './AuthModal'
+import WalletSignIn from './WalletSignIn'
 import { supabase } from '../lib/supabase'
 
 const navItems = [
@@ -175,6 +176,8 @@ export default function Layout() {
                   Sign Up
                 </button>
               )}
+
+              <WalletSignIn />
 
               <Link to="/file" className="civic-nav-cta" onClick={() => setMenuOpen(false)}>
                 Take Action

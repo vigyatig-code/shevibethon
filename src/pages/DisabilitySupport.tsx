@@ -421,8 +421,8 @@ export default function DisabilitySupport() {
         <div className="form-page-tagline">
           <TrueFocus
             sentence="Select your disability to get started"
-            borderColor="#a96545"
-            glowColor="rgba(169, 101, 69, 0.6)"
+            borderColor="#e07a3c"
+            glowColor="rgba(224, 122, 60, 0.6)"
             blurAmount={3}
             animationDuration={0.8}
             pauseBetweenAnimations={0.8}
@@ -469,8 +469,8 @@ export default function DisabilitySupport() {
               edgeSensitivity={28}
               coneSpread={30}
               glowColor="28 70 55"
-              backgroundColor="rgba(26, 18, 8, 0.55)"
-              colors={['#c4976a', '#a96545', '#d4af37']}
+              backgroundColor="rgba(45, 28, 14, 0.88)"
+              colors={['#f0b032', '#e07a3c', '#c25a22']}
               fillOpacity={0.35}
               className="disability-card-glow"
             >

@@ -2,69 +2,78 @@ import { useEffect, useState, useRef, useCallback } from 'react'
 
 const CIVIC_ISSUE_IMAGES = [
   {
-    src: 'https://images.pexels.com/photos/20518249/pexels-photo-20518249.jpeg?auto=compress&cs=tinysrgb&w=800',
+    src: 'https://images.pexels.com/photos/20518249/pexels-photo-20518249.jpeg?auto=compress&cs=tinysrgb&w=600',
     label: 'Potholes',
   },
   {
-    src: 'https://images.pexels.com/photos/28447789/pexels-photo-28447789.jpeg?auto=compress&cs=tinysrgb&w=800',
+    src: 'https://images.pexels.com/photos/28447789/pexels-photo-28447789.jpeg?auto=compress&cs=tinysrgb&w=600',
     label: 'Sewage Overflow',
   },
   {
-    src: 'https://images.pexels.com/photos/34158878/pexels-photo-34158878.jpeg?auto=compress&cs=tinysrgb&w=800',
+    src: 'https://images.pexels.com/photos/34158878/pexels-photo-34158878.jpeg?auto=compress&cs=tinysrgb&w=600',
     label: 'Water Leakage',
   },
   {
-    src: 'https://images.pexels.com/photos/34610704/pexels-photo-34610704.jpeg?auto=compress&cs=tinysrgb&w=800',
+    src: 'https://images.pexels.com/photos/34610704/pexels-photo-34610704.jpeg?auto=compress&cs=tinysrgb&w=600',
     label: 'Power Cuts',
   },
   {
-    src: 'https://images.pexels.com/photos/2382894/pexels-photo-2382894.jpeg?auto=compress&cs=tinysrgb&w=800',
+    src: 'https://images.pexels.com/photos/2382894/pexels-photo-2382894.jpeg?auto=compress&cs=tinysrgb&w=600',
     label: 'Garbage Piles',
   },
   {
-    src: 'https://images.pexels.com/photos/26202091/pexels-photo-26202091.jpeg?auto=compress&cs=tinysrgb&w=800',
+    src: 'https://images.pexels.com/photos/26202091/pexels-photo-26202091.jpeg?auto=compress&cs=tinysrgb&w=600',
     label: 'Waterlogging',
   },
   {
-    src: 'https://images.pexels.com/photos/9953451/pexels-photo-9953451.jpeg?auto=compress&cs=tinysrgb&w=800',
+    src: 'https://images.pexels.com/photos/9953451/pexels-photo-9953451.jpeg?auto=compress&cs=tinysrgb&w=600',
     label: 'Broken Street Lights',
   },
   {
-    src: 'https://images.pexels.com/photos/11849379/pexels-photo-11849379.jpeg?auto=compress&cs=tinysrgb&w=800',
+    src: 'https://images.pexels.com/photos/11849379/pexels-photo-11849379.jpeg?auto=compress&cs=tinysrgb&w=600',
     label: 'Broken Roads',
   },
 ]
 
-const FLASH_DURATION = 1200
-const FINALE_HOLD = 4200
+const FLASH_DURATION = 600
+const FINALE_HOLD = 2000
+const EXIT_DURATION = 500
 
 export default function OpeningSplash({ onComplete }: { onComplete: () => void }) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [prevIndex, setPrevIndex] = useState(-1)
   const [phase, setPhase] = useState<'flashing' | 'finale' | 'exiting'>('flashing')
   const [imagesReady, setImagesReady] = useState(false)
-  const timersRef = useRef<ReturnType<typeof setTimeout>[]>([])
+  const rafCallbacksRef = useRef<Array<(now: number) => void>>([])
   const startedRef = useRef(false)
 
-  const addTimer = (fn: () => void, delay: number) => {
-    const t = setTimeout(fn, delay)
-    timersRef.current.push(t)
-  }
+  const scheduleAt = useCallback((fn: () => void, delay: number) => {
+    const start = performance.now()
+    const tick = (now: number) => {
+      if (now - start >= delay) {
+        fn()
+        return
+      }
+      rafCallbacksRef.current.push(tick)
+      requestAnimationFrame(tick)
+    }
+    rafCallbacksRef.current.push(tick)
+    requestAnimationFrame(tick)
+  }, [])
 
-  const cleanup = useCallback(() => {
-    timersRef.current.forEach((t) => clearTimeout(t))
-    timersRef.current = []
+  const cancelAllRaf = useCallback(() => {
+    rafCallbacksRef.current = []
   }, [])
 
   const startExit = useCallback(() => {
     if (startedRef.current) return
     startedRef.current = true
     setPhase('exiting')
-    addTimer(() => {
-      cleanup()
+    scheduleAt(() => {
+      cancelAllRaf()
       onComplete()
-    }, 700)
-  }, [cleanup, onComplete])
+    }, EXIT_DURATION)
+  }, [scheduleAt, cancelAllRaf, onComplete])
 
   useEffect(() => {
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -79,6 +88,7 @@ export default function OpeningSplash({ onComplete }: { onComplete: () => void }
 
     CIVIC_ISSUE_IMAGES.forEach((img) => {
       const image = new Image()
+      image.decoding = 'async'
       image.onload = () => {
         loaded++
         if (!cancelled && loaded === total) {
@@ -104,22 +114,19 @@ export default function OpeningSplash({ onComplete }: { onComplete: () => void }
 
     CIVIC_ISSUE_IMAGES.forEach((_, i) => {
       if (i === 0) return
-      addTimer(() => {
+      scheduleAt(() => {
         setPrevIndex(i - 1)
         setCurrentIndex(i)
       }, i * FLASH_DURATION)
     })
 
-    const flashTotalTime = CIVIC_ISSUE_IMAGES.length * FLASH_DURATION + 200
-    addTimer(() => setPhase('finale'), flashTotalTime)
+    const flashTotalTime = CIVIC_ISSUE_IMAGES.length * FLASH_DURATION + 100
+    scheduleAt(() => setPhase('finale'), flashTotalTime)
 
-    const exitTime = flashTotalTime + FINALE_HOLD
-    addTimer(startExit, exitTime)
+    scheduleAt(startExit, flashTotalTime + FINALE_HOLD)
 
-    addTimer(startExit, exitTime + 3000)
-
-    return cleanup
-  }, [imagesReady, cleanup, startExit])
+    return cancelAllRaf
+  }, [imagesReady, scheduleAt, cancelAllRaf, startExit])
 
   return (
     <div
@@ -133,12 +140,16 @@ export default function OpeningSplash({ onComplete }: { onComplete: () => void }
               src={CIVIC_ISSUE_IMAGES[prevIndex].src}
               alt=""
               className="prev"
+              decoding="async"
+              loading="eager"
             />
           )}
           <img
             src={CIVIC_ISSUE_IMAGES[currentIndex].src}
             alt=""
             className="current"
+            decoding="async"
+            loading="eager"
           />
         </div>
       )}

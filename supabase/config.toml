@@ -1,8 +1,14 @@
 [functions.ai-assistant]
 verify_jwt = false
 
-[functions.news-api]
+[functions.chat]
 verify_jwt = false
 
-[functions.chat]
+[functions.wallet-nonce]
+verify_jwt = false
+
+[functions.wallet-verify]
+verify_jwt = false
+
+[functions.fetch-news]
 verify_jwt = false

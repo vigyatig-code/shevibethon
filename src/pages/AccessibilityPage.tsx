@@ -486,6 +486,7 @@ export default function AccessibilityPage() {
   }, [speak])
 
   const startListening = useCallback(() => {
+    console.log('[voice-debug] startListening called')
     const SpeechRecognitionCtor =
       (window as unknown as { SpeechRecognition?: new () => SpeechRecognitionType }).SpeechRecognition ||
       (window as unknown as { webkitSpeechRecognition?: new () => SpeechRecognitionType }).webkitSpeechRecognition
@@ -517,6 +518,7 @@ export default function AccessibilityPage() {
     }
 
     recognition.onerror = (event) => {
+      console.log('[voice-debug] recognition.onerror fired:', event.error)
       const p = PROMPTS[langRef.current]
       if (event.error === 'no-speech') {
         setVoiceError(p.voiceNoSpeech)
@@ -766,8 +768,8 @@ export default function AccessibilityPage() {
         <div className="form-page-tagline">
           <TrueFocus
             sentence="Every voice deserves to be heard"
-            borderColor="#a96545"
-            glowColor="rgba(169, 101, 69, 0.6)"
+            borderColor="#e07a3c"
+            glowColor="rgba(224, 122, 60, 0.6)"
             blurAmount={3}
             animationDuration={0.8}
             pauseBetweenAnimations={0.8}
@@ -784,13 +786,14 @@ export default function AccessibilityPage() {
       {/* ─── Disability Support Portal section ─────────────────────────────── */}
 
       <div className="accessibility-disability-types">
-        <h3 className="accessibility-section-title">Select your disability type (optional)</h3>
-        <p className="accessibility-section-subtitle">
-          Choose your disability type below to see common issues, your rights, available resources, and to file a report. An audio description will play automatically when you select a disability.
-        </p>
+        <div className="accessibility-selection-header">
+          <h3 className="accessibility-section-title">Select your disability type (optional)</h3>
+          <p className="accessibility-section-subtitle">
+            Choose your disability type below to see common issues, your rights, available resources, and to file a report. An audio description will play automatically when you select a disability.
+          </p>
 
-        {/* Language toggle */}
-        <div className="accessibility-lang-toggle">
+          {/* Language toggle */}
+          <div className="accessibility-lang-toggle">
           <Languages size={18} />
           <div className="accessibility-lang-btns">
             {(Object.keys(LANG_LABELS) as Language[]).map((l) => (
@@ -805,6 +808,7 @@ export default function AccessibilityPage() {
               </button>
             ))}
           </div>
+        </div>
         </div>
 
         <div className="disability-voice-section">
@@ -845,8 +849,8 @@ export default function AccessibilityPage() {
                 edgeSensitivity={28}
                 coneSpread={30}
                 glowColor="28 70 55"
-                backgroundColor="rgba(26, 18, 8, 0.55)"
-                colors={['#c4976a', '#a96545', '#d4af37']}
+                backgroundColor="rgba(45, 28, 14, 0.88)"
+                colors={['#f0b032', '#e07a3c', '#c25a22']}
                 fillOpacity={0.35}
                 className="disability-card-glow"
               >

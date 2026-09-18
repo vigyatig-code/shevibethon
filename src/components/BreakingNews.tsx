@@ -1,32 +1,33 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { ExternalLink, RefreshCw, AlertTriangle, Clock, Newspaper } from 'lucide-react'
 import { useInView, useReducedMotion, useTilt } from '../lib/hooks'
+import { supabase } from '../lib/supabase'
 
 interface NewsItem {
-  id: number
+  id: string
   title: string
-  description: string
-  url: string
-  image: string | null
-  source: string
-  publishedAt: string
+  link: string
+  source: string | null
   category: string
+  published_at: string | null
 }
 
 const categories = [
   { key: 'all', label: 'All Civic News' },
-  { key: 'roads', label: 'Roads' },
-  { key: 'water', label: 'Water' },
-  { key: 'sanitation', label: 'Sanitation' },
-  { key: 'electricity', label: 'Electricity' },
-  { key: 'disasters', label: 'Disasters & Emergencies' },
-  { key: 'general', label: 'General Civic News' },
+  { key: 'Roads', label: 'Roads' },
+  { key: 'Water', label: 'Water' },
+  { key: 'Sanitation', label: 'Sanitation' },
+  { key: 'Electricity', label: 'Electricity' },
+  { key: 'Disasters & Emergencies', label: 'Disasters & Emergencies' },
+  { key: 'General Civic News', label: 'General Civic News' },
 ]
 
-function formatTime(iso: string): string {
+function formatTime(iso: string | null): string {
+  if (!iso) return 'Recently'
   const diff = Date.now() - new Date(iso).getTime()
+  if (diff < 0) return 'Just now'
   const hours = Math.floor(diff / 3600000)
-  if (hours < 1) return `${Math.floor(diff / 60000)}m ago`
+  if (hours < 1) return `${Math.max(1, Math.floor(diff / 60000))}m ago`
   if (hours < 24) return `${hours}h ago`
   return new Date(iso).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })
 }
@@ -37,7 +38,7 @@ function NewsCard({ item, index, reduced }: { item: NewsItem; index: number; red
 
   return (
     <a
-      href={item.url}
+      href={item.link}
       target="_blank"
       rel="noopener noreferrer"
       ref={tiltRef}
@@ -46,19 +47,13 @@ function NewsCard({ item, index, reduced }: { item: NewsItem; index: number; red
       onMouseMove={tilt.onMouseMove}
       onMouseLeave={tilt.onMouseLeave}
     >
-      {item.image && (
-        <div className="civic-news-card-img-wrap">
-          <img src={item.image} alt={item.title} loading="lazy" />
-          <span className="civic-news-source">{item.source}</span>
-        </div>
-      )}
       <div className="civic-news-card-body">
         <h3 className="civic-news-card-title">{item.title}</h3>
-        <p className="civic-news-card-desc">{item.description}</p>
+        <p className="civic-news-card-desc">{item.source || 'Google News'}</p>
         <div className="civic-news-card-foot">
           <span className="civic-news-time">
             <Clock size={13} />
-            {formatTime(item.publishedAt)}
+            {formatTime(item.published_at)}
           </span>
           <span className="civic-news-read">
             Read article <ExternalLink size={13} />
@@ -81,17 +76,20 @@ export default function BreakingNews() {
     setLoading(true)
     setError(null)
     try {
-      const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/news-api`
-      const res = await fetch(apiUrl, {
-        headers: {
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json',
-        },
-      })
-      if (!res.ok) throw new Error(`Request failed (${res.status})`)
-      const data = await res.json()
-      if (data.error) throw new Error(data.error)
-      setNews(data.articles ?? [])
+      let query = supabase
+        .from('news')
+        .select('id, title, link, source, category, published_at')
+        .order('published_at', { ascending: false })
+        .limit(20)
+
+      if (category !== 'all') {
+        query = query.eq('category', category)
+      }
+
+      const { data, error: queryError } = await query
+
+      if (queryError) throw queryError
+      setNews(data ?? [])
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Unable to load news right now.'
       setError(msg)
@@ -99,14 +97,11 @@ export default function BreakingNews() {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [category])
 
   useEffect(() => {
     fetchNews()
   }, [fetchNews])
-
-  const filteredNews =
-    category === 'all' ? news : news.filter((n) => n.category === category)
 
   return (
     <section className="civic-news" aria-label="Breaking News">
@@ -168,14 +163,14 @@ export default function BreakingNews() {
             <Newspaper size={32} />
             <p>{error}</p>
           </div>
-        ) : filteredNews.length === 0 ? (
+        ) : news.length === 0 ? (
           <div className="civic-news-empty">
             <Newspaper size={32} />
-            <p>No civic news found in the last 30 days. Check back later for updates.</p>
+            <p>No civic news found. Check back later for updates.</p>
           </div>
         ) : (
           <div className={`civic-news-grid ${inView ? 'civic-reveal' : ''}`}>
-            {filteredNews.map((item, index) => (
+            {news.map((item, index) => (
               <NewsCard key={item.id} item={item} index={index} reduced={reduced} />
             ))}
           </div>
