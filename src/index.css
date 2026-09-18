@@ -9262,6 +9262,128 @@ body {
   text-align: center;
 }
 
+/* ==================== PINK GLOWY FAQ THEME (About Us only) ==================== */
+
+@keyframes civic-faq-pink-pulse {
+  0%, 100% {
+    box-shadow: 0 0 12px 2px rgba(255, 105, 150, 0.10), 0 0 24px 6px rgba(255, 105, 150, 0.04);
+  }
+  50% {
+    box-shadow: 0 0 18px 4px rgba(255, 105, 150, 0.20), 0 0 36px 10px rgba(255, 105, 150, 0.08);
+  }
+}
+
+@keyframes civic-faq-pink-shine {
+  0%   { transform: translateX(-160%) skewX(-20deg); opacity: 0; }
+  35%  { opacity: 0.55; }
+  100% { transform: translateX(260%) skewX(-20deg); opacity: 0; }
+}
+
+.civic-about-faqs .civic-faq-item {
+  position: relative;
+  background: linear-gradient(135deg, #341c28, #2a1520);
+  border: 1px solid rgba(255, 105, 150, 0.35);
+  border-left: 4px solid #ff6fa0;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  animation: civic-faq-pink-pulse 3.5s ease-in-out infinite;
+  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.civic-about-faqs .civic-faq-item.open {
+  border-color: rgba(255, 105, 150, 0.55);
+  animation: none;
+  box-shadow: 0 0 22px 6px rgba(255, 105, 150, 0.22), 0 0 44px 14px rgba(255, 105, 150, 0.10);
+}
+
+.civic-about-faqs .civic-faq-item:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 105, 150, 0.6);
+  box-shadow: 0 0 24px 6px rgba(255, 105, 150, 0.5), 0 0 48px 16px rgba(255, 105, 150, 0.18);
+  animation: none;
+}
+
+.civic-about-faqs .civic-faq-item::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(
+    100deg,
+    transparent 0%,
+    rgba(255, 240, 245, 0.12) 40%,
+    rgba(255, 138, 197, 0.18) 50%,
+    rgba(255, 105, 150, 0.10) 60%,
+    transparent 100%
+  );
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(-160%) skewX(-20deg);
+}
+
+.civic-about-faqs .civic-faq-item:hover::after {
+  animation: civic-faq-pink-shine 0.7s ease-out forwards;
+}
+
+.civic-about-faqs .civic-faq-question {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  padding: 22px 26px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+  position: relative;
+  z-index: 1;
+  transition: background 0.3s ease;
+}
+
+.civic-about-faqs .civic-faq-question:hover {
+  background: rgba(255, 105, 150, 0.06);
+}
+
+.civic-about-faqs .civic-faq-q-text {
+  flex: 1;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff0f5;
+  line-height: 1.4;
+}
+
+.civic-about-faqs .civic-faq-plus {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 105, 150, 0.2);
+  color: #ffa8c5;
+  flex-shrink: 0;
+  transition: transform 0.3s ease, background 0.3s ease, box-shadow 0.3s ease, color 0.3s ease;
+}
+
+.civic-about-faqs .civic-faq-item:hover .civic-faq-plus {
+  background: rgba(255, 105, 150, 0.4);
+  box-shadow: 0 0 14px 4px rgba(255, 105, 150, 0.35);
+  color: #ffc4d8;
+}
+
+.civic-about-faqs .civic-faq-plus.rotated {
+  transform: rotate(45deg);
+  background: rgba(255, 105, 150, 0.4);
+  box-shadow: 0 0 14px 4px rgba(255, 105, 150, 0.35);
+  color: #ffc4d8;
+}
+
+.civic-about-faqs .civic-faq-answer-text {
+  color: rgba(255, 240, 245, 0.82);
+}
+
 .civic-about-cta {
   text-align: center;
 }
