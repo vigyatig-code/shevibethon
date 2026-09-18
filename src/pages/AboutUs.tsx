@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
 import { Info, FileText, Search, ThumbsUp, CheckCircle2, Users, Building2, Leaf, Plus } from 'lucide-react'
 import { useInView } from '../lib/hooks'
 import Aurora from '../components/Aurora'
@@ -237,20 +236,6 @@ export default function AboutUs() {
             {ABOUT_FAQS.map((faq, i) => (
               <AboutFaqItem key={i} faq={faq} />
             ))}
-          </div>
-          <div className="civic-about-faq-more">
-            <Link to="/faqs" className="civic-btn civic-btn-secondary">View all FAQs</Link>
-          </div>
-        </div>
-      </section>
-
-      <section className="civic-about-cta">
-        <div className="civic-about-cta-inner">
-          <h2 className="civic-about-cta-title">See something that needs fixing?</h2>
-          <p className="civic-about-cta-text">Report it in under two minutes and track it to resolution.</p>
-          <div className="civic-about-cta-actions">
-            <Link to="/file" className="civic-btn civic-btn-primary">Report an Issue</Link>
-            <Link to="/faqs" className="civic-btn civic-btn-secondary">Read FAQs</Link>
           </div>
         </div>
       </section>
