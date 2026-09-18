@@ -438,9 +438,9 @@ export const footerContent = {
   email: 'contact@civicportal.gov.in',
   hours: 'Mon–Fri, 9:00 AM – 5:00 PM IST',
   links: [
-    { label: 'Accessibility', link: '#' },
-    { label: 'Privacy', link: '#' },
-    { label: 'Terms of Use', link: '#' },
+    { label: 'About Us', link: '/about' },
+    { label: 'FAQs', link: '/faqs' },
+    { label: 'Accessibility', link: '/accessibility' },
     { label: 'Open Data', link: '/insights' },
   ],
   social: [

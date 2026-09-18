@@ -3,7 +3,6 @@ import ImpactMetrics from '../components/ImpactMetrics'
 import PriorityCards from '../components/PriorityCards'
 import ImpactTimeline from '../components/ImpactTimeline'
 import CommunityVoice from '../components/CommunityVoice'
-import FeaturedInitiatives from '../components/FeaturedInitiatives'
 import NearbyIssues from '../components/NearbyIssues'
 import TestimonialCarousel from '../components/TestimonialCarousel'
 import ParticipationCTA from '../components/ParticipationCTA'
@@ -43,7 +42,6 @@ export default function Home() {
       </section>
       <CommunityVoice />
       <NearbyIssues />
-      <FeaturedInitiatives />
       <TestimonialCarousel />
       <ParticipationCTA />
 

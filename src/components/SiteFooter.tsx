@@ -1,5 +1,5 @@
 import { footerContent } from '../lib/civicContent'
-import { useLocation } from 'react-router-dom'
+import { useLocation, Link } from 'react-router-dom'
 
 // SiteFooter: contact details, office hours, links, newsletter signup,
 // and emergency information disclaimer. The Links, Follow us, and
@@ -25,7 +25,11 @@ export default function SiteFooter() {
             <ul className="civic-footer-links">
               {footerContent.links.map((link) => (
                 <li key={link.label}>
-                  <a href={link.link}>{link.label}</a>
+                  {link.link.startsWith('/') ? (
+                    <Link to={link.link}>{link.label}</Link>
+                  ) : (
+                    <a href={link.link}>{link.label}</a>
+                  )}
                 </li>
               ))}
             </ul>
