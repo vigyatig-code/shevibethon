@@ -157,7 +157,10 @@ export function useVoiceFormFiller(
   const speak = useCallback((text: string, onEnd?: () => void) => {
     window.speechSynthesis.cancel()
     const utterance = new SpeechSynthesisUtterance(text)
-    utterance.rate = 0.95
+    // rate and pitch must both be 1 (default) — values below 1 can cause
+    // the browser to use a different audio processing path that distorts pitch.
+    utterance.rate = 1
+    utterance.pitch = 1
     utterance.lang = LANG_CODES[langRef.current]
     const voices = window.speechSynthesis.getVoices()
     const preferred = pickVoice(voices, langRef.current)

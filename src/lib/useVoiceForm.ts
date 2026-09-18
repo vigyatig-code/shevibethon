@@ -118,10 +118,11 @@ export function useVoiceForm(
   }, [])
 
   // Chrome bug workaround: speechSynthesis silently stops after ~15s.
+  // Only call resume() — calling pause() then immediately resume() causes
+  // the engine to restart with a distorted, pitch-shifted ("chipmunk") voice.
   useEffect(() => {
     keepAliveRef.current = setInterval(() => {
       if (window.speechSynthesis.speaking) {
-        window.speechSynthesis.pause()
         window.speechSynthesis.resume()
       }
     }, 10000)
@@ -133,7 +134,9 @@ export function useVoiceForm(
   const speak = useCallback((text: string, callback?: () => void) => {
     window.speechSynthesis.cancel()
     const utterance = new SpeechSynthesisUtterance(text)
-    utterance.rate = 0.92
+    // rate and pitch must both be 1 (default) — values below 1 can cause
+    // the browser to use a different audio processing path that distorts pitch.
+    utterance.rate = 1
     utterance.pitch = 1
     utterance.lang = LANG_CODES[langRef.current]
     const preferred = pickVoice(voicesRef.current, langRef.current)

@@ -307,7 +307,9 @@ export default function AccessibilityPage() {
     if (!('speechSynthesis' in window)) return
     window.speechSynthesis.cancel()
     const utterance = new SpeechSynthesisUtterance(text)
-    utterance.rate = 0.9
+    // rate and pitch must both be 1 (default) — values below 1 can cause
+    // the browser to use a different audio processing path that distorts pitch.
+    utterance.rate = 1
     utterance.pitch = 1
     utterance.volume = 1
     utterance.lang = LANG_CODES[langRef.current]
