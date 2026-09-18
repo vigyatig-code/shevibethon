@@ -3707,53 +3707,67 @@ body {
   margin-bottom: 36px;
 }
 
-.civic-news-title-row {
+/* Sliding BREAKING NEWS marquee */
+.breaking-news-marquee {
+  overflow: hidden;
+  width: 100%;
+  margin-bottom: 28px;
+  border-top: 1px solid rgba(220, 38, 38, 0.2);
+  border-bottom: 1px solid rgba(220, 38, 38, 0.2);
+  background: rgba(220, 38, 38, 0.04);
+  padding: 14px 0;
+  position: relative;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 8%, #000 92%, transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0%, #000 8%, #000 92%, transparent 100%);
+}
+
+.breaking-news-marquee-track {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  justify-content: center;
-  flex-wrap: wrap;
+  gap: 0;
+  white-space: nowrap;
+  animation: breaking-news-slide 18s linear infinite;
+  will-change: transform;
 }
 
-.civic-news-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 4px 12px;
-  border-radius: 6px;
-  background: rgba(178, 59, 59, 0.18);
-  color: #e07070;
-  font-size: 0.72rem;
-  font-weight: 700;
+@media (prefers-reduced-motion: reduce) {
+  .breaking-news-marquee-track {
+    animation: none;
+    justify-content: center;
+  }
+}
+
+.breaking-news-marquee-text {
+  font-family: var(--font-serif);
+  font-size: 2rem;
+  font-weight: 800;
+  color: #dc2626;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  border: 1px solid rgba(178, 59, 59, 0.25);
-}
-
-.civic-news-live {
+  letter-spacing: 0.12em;
+  padding-right: 60px;
+  flex-shrink: 0;
+  text-shadow: 0 0 12px rgba(220, 38, 38, 0.25);
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--civic-amber);
+  gap: 24px;
 }
 
-.civic-live-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #e07070;
-  box-shadow: 0 0 6px rgba(224, 112, 112, 0.6);
+.breaking-news-marquee-text::after {
+  content: '●';
+  font-size: 0.6rem;
+  color: rgba(220, 38, 38, 0.4);
 }
 
-.civic-live-pulse {
-  animation: live-pulse 1.8s ease-in-out infinite;
+@keyframes breaking-news-slide {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
 }
 
-@keyframes live-pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(0.8); }
+@media (max-width: 768px) {
+  .breaking-news-marquee-text {
+    font-size: 1.4rem;
+    padding-right: 40px;
+    letter-spacing: 0.08em;
+  }
 }
 
 .civic-news-controls {

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { ExternalLink, RefreshCw, AlertTriangle, Clock, Newspaper } from 'lucide-react'
+import { ExternalLink, RefreshCw, Clock, Newspaper } from 'lucide-react'
 import { useInView, useReducedMotion, useTilt } from '../lib/hooks'
 import { supabase } from '../lib/supabase'
 
@@ -107,20 +107,16 @@ export default function BreakingNews() {
     <section className="civic-news" aria-label="Breaking News">
       <div className="civic-section-inner" ref={ref}>
         <div className="civic-news-header">
-          <div className="civic-news-title-row">
-            <div className="civic-news-badge">
-              <AlertTriangle size={20} />
-              <span>Breaking</span>
+          <div className="breaking-news-marquee" aria-label="Breaking News ticker">
+            <div className="breaking-news-marquee-track">
+              <span className="breaking-news-marquee-text">BREAKING NEWS</span>
+              <span className="breaking-news-marquee-text">BREAKING NEWS</span>
+              <span className="breaking-news-marquee-text">BREAKING NEWS</span>
+              <span className="breaking-news-marquee-text">BREAKING NEWS</span>
+              <span className="breaking-news-marquee-text">BREAKING NEWS</span>
+              <span className="breaking-news-marquee-text">BREAKING NEWS</span>
             </div>
-            <h2 className="civic-section-title">Breaking News</h2>
-            <span className="civic-news-live">
-              <span className={`civic-live-dot ${!reduced ? 'civic-live-pulse' : ''}`} />
-              Live
-            </span>
           </div>
-          <p className="civic-section-subtitle">
-            Civic problems and solutions from across India — infrastructure, sanitation, transport, environment, urban governance, and major disaster and emergency updates.
-          </p>
 
           <div className="civic-news-controls">
             <div className="civic-news-cats" role="tablist" aria-label="News categories">
