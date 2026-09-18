@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { X, Mail, ShieldCheck, Loader2, ArrowLeft, CheckCircle2 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 
@@ -11,6 +12,7 @@ interface AuthModalProps {
 type Screen = 'email' | 'code'
 
 export default function AuthModal({ open, onClose, onAuthSuccess }: AuthModalProps) {
+  const navigate = useNavigate()
   const [screen, setScreen] = useState<Screen>('email')
   const [email, setEmail] = useState('')
   const [code, setCode] = useState('')
@@ -94,6 +96,7 @@ export default function AuthModal({ open, onClose, onAuthSuccess }: AuthModalPro
       const userEmail = data.user?.email ?? email
       onAuthSuccess(userEmail)
       onClose()
+      navigate('/')
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Verification failed. The code may be wrong or expired.'
       setError(msg)
