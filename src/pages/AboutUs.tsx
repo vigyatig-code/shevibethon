@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Info, FileText, Search, ThumbsUp, CheckCircle2, Users, Building2, Leaf, Plus } from 'lucide-react'
 import { useInView } from '../lib/hooks'
 import Aurora from '../components/Aurora'
+import Shuffle from '../components/Shuffle'
 
 interface FAQ {
   question: string
@@ -111,7 +112,18 @@ export default function AboutUs() {
         <div className="form-page-icon">
           <Info size={32} />
         </div>
-        <h1>About Nazar</h1>
+        <Shuffle
+          text="About Nazar"
+          tag="h1"
+          className="civic-about-shuffle-heading"
+          shuffleDirection="right"
+          duration={0.4}
+          animationMode="evenodd"
+          stagger={0.04}
+          shuffleTimes={2}
+          ease="power3.out"
+          triggerOnHover={true}
+        />
         <p>A platform that turns everyday civic concerns into visible, trackable progress.</p>
       </div>
 
