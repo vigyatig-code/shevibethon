@@ -3707,11 +3707,61 @@ body {
   margin-bottom: 36px;
 }
 
+.civic-news-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.civic-news-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 12px;
+  border-radius: 6px;
+  background: rgba(178, 59, 59, 0.18);
+  color: #e07070;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border: 1px solid rgba(178, 59, 59, 0.25);
+}
+
+.civic-news-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--civic-amber);
+}
+
+.civic-live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #e07070;
+  box-shadow: 0 0 6px rgba(224, 112, 112, 0.6);
+}
+
+.civic-live-pulse {
+  animation: live-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes live-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.8); }
+}
+
 /* Sliding BREAKING NEWS marquee */
 .breaking-news-marquee {
   overflow: hidden;
   width: 100%;
-  margin-bottom: 28px;
+  margin-bottom: 0;
+  margin-top: 0;
   border-top: 1px solid rgba(220, 38, 38, 0.2);
   border-bottom: 1px solid rgba(220, 38, 38, 0.2);
   background: rgba(220, 38, 38, 0.04);
