@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
-import { FileText, Search, List, BarChart3, Menu, X, Leaf, Accessibility, Map, MapPin, ChevronDown, Newspaper, Vote, UserCircle, LogOut, Info, HelpCircle } from 'lucide-react'
+import { FileText, Search, List, BarChart3, Menu, X, Leaf, Accessibility, Map, MapPin, ChevronDown, Newspaper, Vote, UserCircle, LogOut, Info } from 'lucide-react'
 import AnimatedBackground from './AnimatedBackground'
 import ScrollShapeParticles from './ScrollShapeParticles'
 import ScrollProgress from './ScrollProgress'
@@ -19,7 +19,6 @@ const navItems = [
   { to: '/track', label: 'Updates', icon: Search, end: false },
   { to: '/news', label: 'News', icon: Newspaper, end: false },
   { to: '/vote', label: 'Vote', icon: Vote, end: false },
-  { to: '/faqs', label: 'FAQs', icon: HelpCircle, end: false },
   { to: '/insights', label: 'Get Involved', icon: BarChart3, end: false },
 ]
 

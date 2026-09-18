@@ -1,6 +1,65 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Info, FileText, Search, ThumbsUp, CheckCircle2, Users, Building2, Leaf } from 'lucide-react'
+import { Info, FileText, Search, ThumbsUp, CheckCircle2, Users, Building2, Leaf, ChevronDown } from 'lucide-react'
 import { useInView } from '../lib/hooks'
+
+interface AboutFAQ {
+  question: string
+  answer: string
+}
+
+const ABOUT_FAQS: AboutFAQ[] = [
+  {
+    question: 'How do I report a civic issue?',
+    answer:
+      'Click "Report an Issue" in the navigation, fill in the category, subject, and a description of the problem, and submit. You can optionally attach a photo and share your location to help authorities locate the issue faster. After submitting, you will receive a tracking number you can use to follow your report.',
+  },
+  {
+    question: 'Can I track the status of my complaint?',
+    answer:
+      'Yes. Every report receives a unique tracking number (format CMP-XXXXXXXX). Go to the "Updates" page, enter your tracking number, and you will see the current status — Pending, Under Review, Resolved, or Rejected — along with any updates and a timeline of progress.',
+  },
+  {
+    question: 'Is my report anonymous?',
+    answer:
+      'You can file a report without creating an account — anonymous filing is supported. However, providing your name and email helps authorities contact you if they need more details about the issue. Your contact information is only visible to the platform administrators and the assigned government body, not to the general public.',
+  },
+  {
+    question: 'How is priority or urgency decided?',
+    answer:
+      'Each report is automatically assessed for severity based on the category and the words used in your description. Issues involving immediate danger, health hazards, or safety risks are flagged as Critical or High priority. Lower-impact issues are rated Medium or Low. This helps authorities triage the most urgent problems first.',
+  },
+  {
+    question: 'Can I edit or delete a submitted report?',
+    answer:
+      'Once a report is submitted, it cannot be edited or deleted. This ensures a transparent, tamper-proof record of every complaint and its resolution. If you made an error or the issue has changed, you can file a new report with the corrected details, or contact the platform team with your tracking number for assistance.',
+  },
+  {
+    question: 'How does voting work?',
+    answer:
+      'On the "Vote" page, you can browse open civic issues and add your support to the ones that affect you. Each issue shows a running vote count. Reports with more community votes surface higher in priority, signaling to authorities which problems matter most to residents.',
+  },
+]
+
+function AboutFaqItem({ faq, index }: { faq: AboutFAQ; index: number }) {
+  const [open, setOpen] = useState(false)
+  return (
+    <div className={`civic-faq-item ${open ? 'open' : ''}`}>
+      <button
+        className="civic-faq-question"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+      >
+        <span className="civic-faq-q-num">{String(index + 1).padStart(2, '0')}</span>
+        <span className="civic-faq-q-text">{faq.question}</span>
+        <ChevronDown size={18} className={`civic-faq-chevron ${open ? 'rotated' : ''}`} />
+      </button>
+      <div className={`civic-faq-answer ${open ? 'open' : ''}`}>
+        <p className="civic-faq-answer-text">{faq.answer}</p>
+      </div>
+    </div>
+  )
+}
 
 function HowItWorksStep({
   icon: Icon,
@@ -144,6 +203,23 @@ export default function AboutUs() {
               <CheckCircle2 size={22} />
               <span>Visible outcomes, not black boxes</span>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="civic-about-faqs">
+        <div className="civic-section-inner">
+          <div className="civic-section-header">
+            <h2 className="civic-section-title">Frequently asked questions</h2>
+            <p className="civic-section-subtitle">Quick answers to common questions about how the portal works.</p>
+          </div>
+          <div className="civic-about-faq-list">
+            {ABOUT_FAQS.map((faq, i) => (
+              <AboutFaqItem key={i} faq={faq} index={i} />
+            ))}
+          </div>
+          <div className="civic-about-faq-more">
+            <Link to="/faqs" className="civic-btn civic-btn-secondary">View all FAQs</Link>
           </div>
         </div>
       </section>
