@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Info, FileText, Search, ThumbsUp, CheckCircle2, Users, Building2, Leaf, ChevronDown } from 'lucide-react'
 import { useInView } from '../lib/hooks'
+import Aurora from '../components/Aurora'
 
 interface AboutFAQ {
   question: string
@@ -88,6 +89,14 @@ function HowItWorksStep({
 export default function AboutUs() {
   return (
     <div className="civic-about-page">
+      <div className="aurora-bg-wrap" aria-hidden="true">
+        <Aurora
+          colorStops={['#7cff67', '#B497CF', '#5227FF']}
+          blend={0.5}
+          amplitude={1.0}
+          speed={0.5}
+        />
+      </div>
       <div className="form-page-header">
         <div className="form-page-icon">
           <Info size={32} />
