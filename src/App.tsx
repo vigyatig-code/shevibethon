@@ -5,6 +5,7 @@ import Home from './pages/Home'
 import FileComplaint from './pages/FileComplaint'
 import TrackComplaint from './pages/TrackComplaint'
 import ComplaintList from './pages/ComplaintList'
+import PublicDashboard from './pages/PublicDashboard'
 import Insights from './pages/Insights'
 import AccessibilityPage from './pages/AccessibilityPage'
 import MapPage from './pages/MapPage'
@@ -29,6 +30,7 @@ export default function App() {
           <Route path="/track" element={<TrackComplaint />} />
           <Route path="/track/:trackingNumber" element={<TrackComplaint />} />
           <Route path="/complaints" element={<ComplaintList />} />
+          <Route path="/dashboard" element={<PublicDashboard />} />
           <Route path="/insights" element={<Insights />} />
           <Route path="/accessibility" element={<AccessibilityPage />} />
           <Route path="/disability-support" element={<Navigate to="/accessibility" replace />} />

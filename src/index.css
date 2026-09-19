@@ -9792,3 +9792,337 @@ body {
     justify-content: center;
   }
 }
+
+/* ==================== PUBLIC DASHBOARD ==================== */
+
+.civic-inner-page-wrap {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 48px 24px;
+  position: relative;
+  z-index: 1;
+}
+
+.civic-inner-page-header {
+  margin-bottom: 32px;
+}
+
+.civic-inner-page-title {
+  font-family: var(--font-serif);
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--civic-text-bright);
+  margin-bottom: 8px;
+  letter-spacing: -0.02em;
+}
+
+.civic-inner-page-subtitle {
+  font-size: 0.95rem;
+  color: var(--civic-muted);
+  line-height: 1.6;
+  max-width: 600px;
+}
+
+/* Filter row */
+.dash-filter-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.dash-filter-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  color: var(--civic-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.dash-filter-pills {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.dash-filter-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 16px;
+  border-radius: 100px;
+  border: 1px solid var(--civic-border);
+  background: var(--civic-glass);
+  color: var(--civic-muted);
+  font-size: 0.82rem;
+  font-weight: 500;
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.dash-filter-pill:hover {
+  color: var(--civic-text-bright);
+  border-color: rgba(169, 101, 69, 0.3);
+}
+
+.dash-filter-pill.active {
+  background: rgba(169, 101, 69, 0.12);
+  color: var(--civic-amber);
+  border-color: rgba(169, 101, 69, 0.3);
+}
+
+.dash-pill-count {
+  font-size: 0.7rem;
+  font-weight: 700;
+  background: rgba(111, 78, 55, 0.1);
+  color: var(--civic-muted);
+  padding: 1px 7px;
+  border-radius: 100px;
+  min-width: 20px;
+  text-align: center;
+}
+
+.dash-filter-pill.active .dash-pill-count {
+  background: rgba(169, 101, 69, 0.15);
+  color: var(--civic-amber);
+}
+
+/* Table */
+.dash-table-wrap {
+  background: var(--civic-glass);
+  border: 1px solid var(--civic-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  overflow-x: auto;
+}
+
+.dash-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  min-width: 800px;
+}
+
+.dash-table thead {
+  background: rgba(111, 78, 55, 0.06);
+  border-bottom: 1px solid var(--civic-border);
+}
+
+.dash-table th {
+  padding: 14px 16px;
+  text-align: left;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--civic-muted);
+  white-space: nowrap;
+}
+
+.dash-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--civic-border);
+  color: var(--civic-text);
+  vertical-align: middle;
+}
+
+.dash-table tbody tr {
+  transition: background 0.2s ease;
+}
+
+.dash-table tbody tr:hover {
+  background: rgba(169, 101, 69, 0.04);
+}
+
+.dash-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Ticket cell */
+.dash-cell-ticket {
+  font-family: 'Courier New', monospace;
+  font-weight: 700;
+  color: var(--civic-text-bright);
+  white-space: nowrap;
+}
+
+/* Title cell */
+.dash-cell-title {
+  max-width: 240px;
+}
+
+.dash-title-text {
+  display: block;
+  color: var(--civic-text-bright);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dash-linked {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.68rem;
+  color: var(--civic-amber);
+  margin-top: 2px;
+}
+
+/* Category cell */
+.dash-cell-category {
+  color: var(--civic-muted);
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+/* Status badge */
+.dash-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 100px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.dash-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dash-status-open {
+  background: rgba(196, 151, 106, 0.12);
+  color: var(--civic-amber);
+}
+.dash-status-open .dash-status-dot { background: var(--civic-amber); }
+
+.dash-status-progress {
+  background: rgba(169, 101, 69, 0.1);
+  color: #8a6a45;
+}
+.dash-status-progress .dash-status-dot { background: #8a6a45; }
+
+.dash-status-closed {
+  background: rgba(111, 120, 80, 0.12);
+  color: #6f7850;
+}
+.dash-status-closed .dash-status-dot { background: #6f7850; }
+
+.dash-status-reopened {
+  background: rgba(178, 59, 59, 0.12);
+  color: #c25e5e;
+}
+.dash-status-reopened .dash-status-dot { background: #c25e5e; }
+
+/* Classification badge */
+.dash-class-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.dash-class-new {
+  background: rgba(111, 120, 80, 0.1);
+  color: #6f7850;
+}
+
+.dash-class-failure {
+  background: rgba(178, 59, 59, 0.12);
+  color: #c25e5e;
+}
+
+.dash-class-duplicate {
+  background: rgba(169, 101, 69, 0.1);
+  color: var(--civic-amber);
+}
+
+/* Location cell */
+.dash-cell-location {
+  white-space: nowrap;
+}
+
+.dash-loc {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--civic-muted);
+  font-size: 0.8rem;
+}
+
+.dash-loc-muted {
+  color: var(--civic-muted);
+  font-size: 0.78rem;
+  font-family: 'Courier New', monospace;
+}
+
+/* Filed cell */
+.dash-cell-filed {
+  white-space: nowrap;
+}
+
+.dash-relative {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--civic-muted);
+  font-size: 0.8rem;
+}
+
+/* Warranty cell */
+.dash-cell-warranty {
+  white-space: nowrap;
+}
+
+.dash-warranty-active {
+  font-size: 0.78rem;
+  color: #6f7850;
+  font-weight: 500;
+}
+
+.dash-warranty-expired {
+  font-size: 0.78rem;
+  color: #c25e5e;
+  font-weight: 500;
+}
+
+.dash-warranty-none {
+  color: var(--civic-muted);
+  font-size: 0.8rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .civic-inner-page-wrap {
+    padding: 32px 16px;
+  }
+
+  .civic-inner-page-title {
+    font-size: 1.5rem;
+  }
+
+  .dash-filter-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .dash-filter-pills {
+    overflow-x: auto;
+    width: 100%;
+    padding-bottom: 4px;
+  }
+}
