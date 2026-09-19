@@ -5,28 +5,6 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
-export interface CivicComplaint {
-  id: string
-  ticket_no: number
-  filed_by: string | null
-  category: string
-  title: string
-  description: string | null
-  latitude: number
-  longitude: number
-  address: string | null
-  asset_id: string | null
-  status: 'open' | 'in_progress' | 'closed' | 'reopened'
-  contractor_id: string | null
-  filed_at: string
-  closed_at: string | null
-  warranty_until: string | null
-  classification: 'new' | 'probable_repair_failure' | 'duplicate'
-  linked_complaint_id: string | null
-  evidence_urls: string[] | null
-  evidence_hash: string | null
-}
-
 export interface Complaint {
   id: string
   tracking_number: string
